@@ -14,13 +14,14 @@ import { Nodes } from './shared/data';
   styleUrls:['app.component.css'],
   selector: 'app-root',
   template: `    
-    <svg width="900" height="500"></svg>
+    <svg width="900" height="500" pointer-events="all" perserveAspectRatio="xMinYMid"></svg>
     <!--<canvas width="900" height="500" ></canvas>-->
   `
 })
 export class AppComponent implements OnInit {
   simulation:d3Force.Simulation;
   private links:any = null;
+  private labels:any = null;
   private nodes:any = null;
   private width: number = 900;
   private height: number = 500;
@@ -42,7 +43,7 @@ export class AppComponent implements OnInit {
       .force("link", d3Force.forceLink().id(function(d) { return d.id; }))
       .force("charge", d3Force.forceManyBody())
       .force("center", d3Force.forceCenter(this.width / 2, this.height / 2))
-      /*.force('x', d3Force.forceX().x(function(d) {
+      .force('x', d3Force.forceX().x(function(d) {
         //console.log('ddddd',d);
         switch(d.base_type){
           case('output'):
@@ -53,21 +54,23 @@ export class AppComponent implements OnInit {
           default:
             return _self.width / 2;
         }
-      }))*/
+      }))
 
 
 
-
-    this.simulation
+    let force = this.simulation
       .nodes(Nodes.nodes)
-      .on("tick", ()=>{ this.ticked(); });
+
+
 
 
     this.simulation.force("link")
       .links(Nodes.links);
-
-    this.drawLink();
     this.drawNode();
+    this.drawLink();
+ force.on("tick", ()=>{ this.ticked(); });
+
+    //this.drawLabels();
 
 
   }
@@ -80,13 +83,18 @@ export class AppComponent implements OnInit {
       .attr("y1", function(d) { return d.source.y; })
       .attr("x2", function(d) { return d.target.x; })
       .attr("y2", function(d) { return d.target.y; });
+
     this.nodes
-      .attr('cx', function(d) {
+      .attr("transform", function(d) {
+        return "translate(" + d.x + "," + d.y + ")";
+      })
+
+      /*.attr('cx', function(d) {
         return d.x;
       })
       .attr('cy', function(d) {
         return d.y;
-      });
+      });*/
 
   }
   drawLink() {
@@ -114,10 +122,15 @@ export class AppComponent implements OnInit {
 
 
     this.nodes = this.svg
-      .selectAll("circle")
-      .data(Nodes.nodes)
+      .selectAll("g.node")
+      .data(Nodes.nodes);
+
+    let nodeEnter = this.nodes
       .enter()
-      .append('circle')
+      .append("g")
+      .attr("class", "node");
+
+    nodeEnter.append('svg:circle')
       .attr('r', function(d) {
         return 10;
       })
@@ -131,24 +144,43 @@ export class AppComponent implements OnInit {
             return "#999";
         }
       })
-      .attr('cx', function(d) {
-        return d.x;
-      })
-      .attr('cy', function(d) {
-        return d.y;
-      })
-      /*.append("text")
-      .attr('cx', function(d) {
-        return d.x;
-      })
-      .attr('cy', function(d) {
-        return d.y + 10;
-      })
-      .text(function(d) { return d.id; });*/
+
+
+    //nodeEnter.merge(this.nodes)
+    nodeEnter.append("svg:text")
+      .attr("text-anchor", "middle")
+      .attr("class","textClass")
+      .attr("id", function(d) { return "Node_"+d.id;})
+      .attr("fill", "black")
+      .attr("font-size", function(d){return d.r*6})
+      .attr("text-align", "center")
+      .attr("dy", function(d){return 10})
+      .text(function(d) { return d.id; });
 
     this.nodes.exit()
+      //.transition()
       .remove();
   }
+
+ /* drawLabels() {
+
+
+    this.labels = this.svg
+      .selectAll("text")
+      .data(Nodes.nodes)
+      .enter()
+      .append("text")
+     .attr('cx', function(d) {
+     return d.x;
+     })
+     .attr('cy', function(d) {
+     return d.y + 10;
+     })
+     .text(function(d) { return d.id; });
+
+    this.labels.exit()
+      .remove();
+  }*/
 
    dragstarted() {
     if (!d3.event.active) this.simulation.alphaTarget(0.3).restart();
