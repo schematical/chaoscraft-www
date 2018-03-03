@@ -39,22 +39,67 @@ export class AppComponent implements OnInit {
       .append("svg:g");
 
     let _self = this;
+    let inputYCount = 0;
+    let outputYCount = 0;
     this.simulation = d3Force.forceSimulation()
       .force("link", d3Force.forceLink().id(function(d) { return d.id; }))
       .force("charge", d3Force.forceManyBody())
       .force("center", d3Force.forceCenter(this.width / 2, this.height / 2))
-      .force('x', d3Force.forceX().x(function(d) {
-        //console.log('ddddd',d);
-        switch(d.base_type){
-          case('output'):
-            return _self.width;
 
-          case('input'):
-            return 0;
-          default:
-            return _self.width / 2;
-        }
-      }))
+      .force('x', d3Force.forceX()
+        .x(function(d) {
+
+          switch(d.base_type){
+            case('output'):
+              return _self.width;
+            case('input'):
+              return 0;
+            default:
+              return null ;
+          }
+        })
+        .strength(function(d) {
+
+          switch(d.base_type){
+            case('output'):
+              return 1;
+            case('input'):
+              return 1;
+            default:
+              return 0 ;
+          }
+        })
+      )
+      .force('y', d3Force.forceY()
+        .y(function(d) {
+          let y = null;
+          switch(d.base_type){
+            case('output'):
+              y = inputYCount * 100;
+              inputYCount += 1
+              return y;
+
+            case('input'):
+              y = outputYCount * 50;
+              outputYCount += 1
+              return y;
+
+            default:
+              return y ;
+          }
+        })
+        .strength(function(d) {
+
+          switch(d.base_type){
+            case('output'):
+              return 1;
+            case('input'):
+              return 1;
+            default:
+              return 0 ;
+          }
+        })
+      )
 
 
 
@@ -83,16 +128,13 @@ export class AppComponent implements OnInit {
       .attr("y2", function(d) { return d.target.y; });
 
     this.nodes
-      .attr("transform", function(d) {
-        return "translate(" + d.x + "," + d.y + ")";
+      .each(function(d){
+        d3.select(d.node).attr("transform", function(d) {
+          return "translate(" + d.x + "," + d.y + ")";
+        })
       })
 
-      /*.attr('cx', function(d) {
-        return d.x;
-      })
-      .attr('cy', function(d) {
-        return d.y;
-      });*/
+
 
   }
   drawLink() {
@@ -127,9 +169,12 @@ export class AppComponent implements OnInit {
     let nodeEnter = this.nodes
       .append("g")
       .attr("class", "node")
-      .attr("transform", function(d) {
+      /*.attr("transform", function(d) {
         return "translate(" + d.x + "," + d.y + ")";
-      });
+      })*/
+      .each(function(d) { d.node = this; })
+      .on("mouseover", this.hovered(true))
+      .on("mouseout", this.hovered(false))
 
     nodeEnter.append('svg:circle')
       .attr('r', function(d) {
@@ -155,7 +200,7 @@ export class AppComponent implements OnInit {
       .attr("fill", "black")
       .attr("font-size", function(d){return d.r*6})
       .attr("text-align", "center")
-      .attr("dy", function(d){return 10})
+      .attr("dy", function(d){return 30})
       .text(function(d) { return d.id; });
 
     this.nodes.exit()
@@ -182,6 +227,9 @@ export class AppComponent implements OnInit {
     this.labels.exit()
       .remove();
   }*/
+  hovered(hover) {
+
+  }
 
    dragstarted() {
     if (!d3.event.active) this.simulation.alphaTarget(0.3).restart();
