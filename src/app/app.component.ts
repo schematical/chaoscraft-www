@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-
+import * as io from 'socket.io-client';
 import * as d3 from 'd3-selection';
 import * as d3Drag from 'd3-drag';
 import * as d3Scale from 'd3-scale';
@@ -18,7 +18,8 @@ import { Nodes } from './shared/data';
   `
 })
 export class AppComponent implements OnInit {
-  simulation:d3Force.Simulation;
+  protected socket:SocketIOClient.Socket = null;
+  protected simulation:d3Force.Simulation;
   private links:any = null;
   private labels:any = null;
   private nodes:any = null;
@@ -35,8 +36,22 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.xScale = d3Scale.linear().range([0, 720]),
-    this.yScale = d3Scale.linear().range([0, 720]),
+
+
+    this.socket = io('http://localhost:3000');
+    console.log("Setting Up Socket");
+
+    console.log("CONNECTED");
+    this.socket.on('www_hello_response', (message)=>{
+      console.log('www_hello_response', message)
+    })
+    this.socket.emit('www_hello', { foo:'bar'});
+
+
+
+
+    //this.xScale = d3Scale.linear().range([0, 720]),
+    //this.yScale = d3Scale.linear().range([0, 720]),
     this.svg = d3.select("svg")
       .append("svg:g");
 
