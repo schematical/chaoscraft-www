@@ -62,13 +62,11 @@ export class AppComponent implements OnInit {
       .nodes(Nodes.nodes)
 
 
-
-
     this.simulation.force("link")
       .links(Nodes.links);
     this.drawNode();
     this.drawLink();
- force.on("tick", ()=>{ this.ticked(); });
+    force.on("tick", ()=>{ this.ticked(); });
 
     //this.drawLabels();
 
@@ -123,12 +121,15 @@ export class AppComponent implements OnInit {
 
     this.nodes = this.svg
       .selectAll("g.node")
-      .data(Nodes.nodes);
+      .data(Nodes.nodes)
+      .enter();
 
     let nodeEnter = this.nodes
-      .enter()
       .append("g")
-      .attr("class", "node");
+      .attr("class", "node")
+      .attr("transform", function(d) {
+        return "translate(" + d.x + "," + d.y + ")";
+      });
 
     nodeEnter.append('svg:circle')
       .attr('r', function(d) {
