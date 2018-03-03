@@ -1,1 +1,27 @@
 /* You can add global styles to this file, and also import other style files */
+
+.node_circle{
+  #fill-opacity:0.4;
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+.output_node{
+  fill:#6faa78;
+}
+.input_node{
+  fill:#5ca4aa
+}
+.middle_node{
+  fill:#b8b8b8;
+}
+.selected_node .middle_node{
+  stroke: #6eb1ff;
+}
+.selected_node .node_circle {
+  #stroke: black;
+}
+
+.link {
+  stroke: #999;
+}
+

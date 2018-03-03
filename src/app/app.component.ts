@@ -14,8 +14,7 @@ import { Nodes } from './shared/data';
   styleUrls:['app.component.css'],
   selector: 'app-root',
   template: `    
-    <svg width="900" height="500" pointer-events="all" perserveAspectRatio="xMinYMid"></svg>
-    <!--<canvas width="900" height="500" ></canvas>-->
+    <svg width="900" height="900" pointer-events="all" perserveAspectRatio="xMinYMid"></svg>
   `
 })
 export class AppComponent implements OnInit {
@@ -27,6 +26,8 @@ export class AppComponent implements OnInit {
   private height: number = 500;
   private x: any;
   private y: any;
+  private xScale:any;
+  private yScale:any;
   private svg: any;
 
   constructor() {
@@ -34,7 +35,8 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
-
+    this.xScale = d3Scale.linear().range([0, 720]),
+    this.yScale = d3Scale.linear().range([0, 720]),
     this.svg = d3.select("svg")
       .append("svg:g");
 
@@ -43,8 +45,8 @@ export class AppComponent implements OnInit {
     let outputYCount = 0;
     this.simulation = d3Force.forceSimulation()
       .force("link", d3Force.forceLink().id(function(d) { return d.id; }))
-      .force("charge", d3Force.forceManyBody())
-      .force("center", d3Force.forceCenter(this.width / 2, this.height / 2))
+      //.force("charge", d3Force.forceManyBody())
+      //.force("center", d3Force.forceCenter(this.width / 2, this.height / 2))
 
       .force('x', d3Force.forceX()
         .x(function(d) {
@@ -75,12 +77,12 @@ export class AppComponent implements OnInit {
           let y = null;
           switch(d.base_type){
             case('output'):
-              y = inputYCount * 100;
+              y = inputYCount * 70;
               inputYCount += 1
               return y;
 
             case('input'):
-              y = outputYCount * 50;
+              y = outputYCount * 70;
               outputYCount += 1
               return y;
 
@@ -109,8 +111,9 @@ export class AppComponent implements OnInit {
 
     this.simulation.force("link")
       .links(Nodes.links);
-    this.drawNode();
+
     this.drawLink();
+    this.drawNode();
     force.on("tick", ()=>{ this.ticked(); });
 
     //this.drawLabels();
@@ -154,7 +157,7 @@ export class AppComponent implements OnInit {
       .style("stroke-width", function(d) {
         return 1;//d.value;
       })
-      .style("stroke", '#000');
+      .style("stroke", '#888');
     this.links.exit().remove();
   }
 
@@ -173,22 +176,34 @@ export class AppComponent implements OnInit {
         return "translate(" + d.x + "," + d.y + ")";
       })*/
       .each(function(d) { d.node = this; })
-      .on("mouseover", this.hovered(true))
-      .on("mouseout", this.hovered(false))
+      .on("mouseover", function(d){
+        d3.select(d.node).classed('selected_node', true);
+      })
+      .on("mouseout", function(d){
+        d3.select(d.node).classed('selected_node', false);
+      })
+
+
 
     nodeEnter.append('svg:circle')
+      .attr("class", "node_circle")
       .attr('r', function(d) {
         return 10;
       })
-      .style('fill', function(d) {
+      .each(function(d){
+        let className = null;
         switch(d.base_type){
           case('output'):
-            return "#a00";
+            className = "output_node";
+          break;
           case('input'):
-            return "#0a0";
+            className = "input_node";
+          break;
           case('middle'):
-            return "#999";
+            className = "middle_node";
+          break;
         }
+        d3.select(d.node).select('circle').classed(className, true);
       })
 
 
@@ -227,9 +242,7 @@ export class AppComponent implements OnInit {
     this.labels.exit()
       .remove();
   }*/
-  hovered(hover) {
 
-  }
 
    dragstarted() {
     if (!d3.event.active) this.simulation.alphaTarget(0.3).restart();
