@@ -19,11 +19,11 @@ class HttpClient{
       options.withCredentials = true;
 
       return this.http.get(
-        'http://localhost:3000/brains/' + brainId,
+        'http://localhost:3000/bots/' + brainId + '/brain',
         new RequestOptions(options)
       )
       .subscribe((res: Response) => {
-        let rawNodes = res.json();;
+        let rawNodes = res.json();
         let parsedNodes = [];
         let links = [];
         Object.keys(rawNodes).forEach((id)=>{
