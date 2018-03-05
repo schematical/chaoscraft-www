@@ -8,7 +8,7 @@ import * as d3Array from 'd3-array';
 import * as d3Axis from 'd3-axis';
 import * as d3Force from 'd3-force';
 
-import { Nodes } from './shared/data';
+import { HttpClient }  from './shared/data';
 
 @Component({
   styleUrls:['app.component.css'],
@@ -18,6 +18,7 @@ import { Nodes } from './shared/data';
   `
 })
 export class AppComponent implements OnInit {
+  //protected http:HttpClient = null;
   protected socket:SocketIOClient.Socket = null;
   protected simulation:d3Force.Simulation;
   private links:any = null;
@@ -30,8 +31,10 @@ export class AppComponent implements OnInit {
   private xScale:any;
   private yScale:any;
   private svg: any;
+  private brainData:any = null;
 
-  constructor() {
+  constructor(private http: HttpClient) {
+
 
   }
 
@@ -42,12 +45,21 @@ export class AppComponent implements OnInit {
     console.log("Setting Up Socket");
 
     console.log("CONNECTED");
-    this.socket.on('www_hello_response', (message)=>{
+    this.socket.on('www_hello_response', (message) => {
       console.log('www_hello_response', message)
     })
-    this.socket.emit('www_hello', { foo:'bar'});
+    this.socket.emit('www_hello', {foo: 'bar'});
+    this.http.loadBrain('test')
+      .then((data:any) => {
+        this.brainData = data;
+        this.startDrawing();
+      })
+      .catch((e)=>{
+        throw e;
+      })
 
-
+  }
+  startDrawing(){
 
 
     //this.xScale = d3Scale.linear().range([0, 720]),
@@ -60,6 +72,7 @@ export class AppComponent implements OnInit {
     let outputYCount = 0;
     this.simulation = d3Force.forceSimulation()
       .force("link", d3Force.forceLink().id(function(d) { return d.id; }))
+      .force("collide", d3Force.forceCollide().radius(function(d) { return 30; }).iterations(2))
       //.force("charge", d3Force.forceManyBody())
       //.force("center", d3Force.forceCenter(this.width / 2, this.height / 2))
 
@@ -121,11 +134,11 @@ export class AppComponent implements OnInit {
 
 
     let force = this.simulation
-      .nodes(Nodes.nodes)
+      .nodes(this.brainData.nodes)
 
 
     this.simulation.force("link")
-      .links(Nodes.links);
+      .links(this.brainData.links);
 
     this.drawLink();
     this.drawNode();
@@ -159,7 +172,7 @@ export class AppComponent implements OnInit {
 
     this.links = this.svg
       .selectAll("line")
-      .data(Nodes.links)
+      .data(this.brainData.links)
       .enter()
       .append("line")
       .attr("class", "link")
@@ -181,7 +194,7 @@ export class AppComponent implements OnInit {
 
     this.nodes = this.svg
       .selectAll("g.node")
-      .data(Nodes.nodes)
+      .data(this.brainData.nodes)
       .enter();
 
     let nodeEnter = this.nodes
@@ -228,10 +241,10 @@ export class AppComponent implements OnInit {
       .attr("class","textClass")
       .attr("id", function(d) { return "Node_"+d.id;})
       .attr("fill", "black")
-      .attr("font-size", function(d){return d.r*6})
+      .attr("font-size", function(d){return d.r * 6})
       .attr("text-align", "center")
       .attr("dy", function(d){return 30})
-      .text(function(d) { return d.id; });
+      .text(function(d) { return d.type; });
 
     this.nodes.exit()
       //.transition()
@@ -243,7 +256,7 @@ export class AppComponent implements OnInit {
 
     this.labels = this.svg
       .selectAll("text")
-      .data(Nodes.nodes)
+      .data(this.brainData.nodes)
       .enter()
       .append("text")
      .attr('cx', function(d) {
