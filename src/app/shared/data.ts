@@ -42,7 +42,8 @@ class HttpClient{
         })
         return resolve({
           nodes:parsedNodes,
-          links:links
+          links:links,
+          indexedNodes: rawNodes
         });
       })
     })

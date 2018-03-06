@@ -1,7 +1,8 @@
 /* You can add global styles to this file, and also import other style files */
-
+html, body { margin:0; padding:0; overflow:hidden }
+svg { position:fixed; top:0; left:0; height:100%; width:66% }
 .node_circle{
-  #fill-opacity:0.4;
+  fill-opacity:0.4;
   stroke: #fff;
   stroke-width: 1.5px;
 }
@@ -17,11 +18,27 @@
 .selected_node .middle_node{
   stroke: #6eb1ff;
 }
+
 .selected_node .node_circle {
+  fill-opacity: 1;
   #stroke: black;
+}
+.firing_node .node_circle {
+  fill-opacity: 1;
+  stroke: #ff6973;
+}
+.textClass{
+  fill-opacity: .3;
+}
+.selected_node .textClass{
+  fill-opacity: 1;
 }
 
 .link {
   stroke: #999;
+  stroke-opacity: .3;
 }
-
+.hightlighted_link {
+  stroke: #3a993e;
+  stroke-width: 1;
+}

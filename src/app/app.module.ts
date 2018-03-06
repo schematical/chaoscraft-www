@@ -9,6 +9,7 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { BrainViewComponent } from './brain-view/brain-view.component';
 import { HomeComponent } from './home/home.component';
+import {SocketService} from "./socket.service";
 
 const appRoutes: Routes = [
   { path: '', component: HomeComponent },
@@ -34,7 +35,7 @@ const appRoutes: Routes = [
     FormsModule,
     HttpModule
   ],
-  providers: [HttpClient],
+  providers: [HttpClient, SocketService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
