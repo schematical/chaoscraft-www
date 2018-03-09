@@ -344,13 +344,14 @@ export class BrainViewComponent implements OnInit {
       })
       .on("mouseout", (d)=>{
         let nodeData = this.brainData.indexedNodes[d.id]
+        let self = this;
         function updateDependants(d){
           d3.select(d.node).classed('selected_node', false);
           if(!d.dependants){
             return;
           }
           d.dependants.forEach((dep)=>{
-            let depNode =  this.brainData.indexedNodes[dep.id]
+            let depNode =  self.brainData.indexedNodes[dep.id]
             updateDependants(depNode);
           });
         }
