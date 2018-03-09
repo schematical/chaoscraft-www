@@ -15,11 +15,10 @@ class HttpClient{
     let p = new Promise((resolve, reject)=>{
 
       let options:any = {}
-      //options.headers =  this.headers;
       options.withCredentials = true;
 
       return this.http.get(
-        'http://localhost:3000/bots/' + brainId + '/brain',
+        'https://chaoscraft-api.schematical.com/bots/' + brainId + '/brain',
         new RequestOptions(options)
       )
       .subscribe((res: Response) => {

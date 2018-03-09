@@ -7,7 +7,7 @@ export class SocketService {
   protected socket:SocketIOClient.Socket = null;
   constructor() {
 
-    this.socket = io('http://localhost:3000');
+    this.socket = io('http://localhost:3000');//https://chaoscraft-api.schematical.com');
     console.log("Setting Up Socket");
 
     this.socket.on('www_hello_response', (message) => {

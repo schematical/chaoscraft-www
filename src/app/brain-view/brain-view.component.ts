@@ -8,6 +8,7 @@ import * as d3Array from 'd3-array';
 import * as d3Axis from 'd3-axis';
 import * as d3Zoom from 'd3-zoom';
 import * as d3Force from 'd3-force';
+//import * as MinecraftData  from  'minecraft-data' ;
 import { ActivatedRoute, Params } from '@angular/router';
 import { SocketService } from '../socket.service'
 import { HttpClient }  from '../shared/data';
@@ -17,8 +18,9 @@ import { HttpClient }  from '../shared/data';
   styleUrls: ['./brain-view.component.css']
 })
 export class BrainViewComponent implements OnInit {
-
+  //protected minecraftData:any = null;
   //protected http:HttpClient = null;
+  protected selectedNodeJSON:string = null;
   protected svgParent:any;
   protected simulation:d3Force.Simulation;
   private links:any = null;
@@ -39,7 +41,7 @@ export class BrainViewComponent implements OnInit {
     private route: ActivatedRoute,
     private socket: SocketService
   ) {
-
+    //this.minecraftData = new MinecraftData('1.12.2');
     console.log("HIT");
   }
 
@@ -281,11 +283,59 @@ export class BrainViewComponent implements OnInit {
       .attr("class", "node")
 
       .each(function(d) { d.node = this; })
-      .on("mouseover", function(d){
-        d3.select(d.node).classed('selected_node', true);
+      .on("mouseover", (d)=>{
+
+        let nodeData = this.brainData.indexedNodes[d.id];
+        let jsonData = _.clone(nodeData);
+        delete(jsonData.dependancies);
+        delete(jsonData.node)
+        delete(jsonData.x);
+        delete(jsonData.y);
+        delete(jsonData.vx);
+        delete(jsonData.vy);
+        /*if(jsonData.target){
+          switch(jsonData.target.type){
+            case('block'):
+              jsonData.target.blockName = this.minecraftData.blocks[jsonData.target.block];
+            break;
+            case('item'):
+              jsonData.target.itemName = this.minecraftData.items[jsonData.target.item];
+              break;
+            case('entity'):
+              jsonData.target.entityName = this.minecraftData.mobs[jsonData.target.entity];
+              break;
+            default:
+              console.error("Not sure how to translate `jsonData.target.type`:" + jsonData.target.type);
+          }
+        }*/
+        this.selectedNodeJSON = JSON.stringify(jsonData, null, 3);
+        function updateDependants(d){
+          d3.select(d.node).classed('selected_node', true);
+          if(!d.dependants){
+            return;
+          }
+          d.dependants.forEach((dep)=>{
+            let depNode =  this.brainData.indexedNodes[dep.id]
+            updateDependants(depNode);
+          });
+        }
+        updateDependants.apply(this,[nodeData]);
+
+
       })
-      .on("mouseout", function(d){
-        d3.select(d.node).classed('selected_node', false);
+      .on("mouseout", (d)=>{
+        let nodeData = this.brainData.indexedNodes[d.id]
+        function updateDependants(d){
+          d3.select(d.node).classed('selected_node', false);
+          if(!d.dependants){
+            return;
+          }
+          d.dependants.forEach((dep)=>{
+            let depNode =  this.brainData.indexedNodes[dep.id]
+            updateDependants(depNode);
+          });
+        }
+        updateDependants.apply(this,[nodeData]);
       })
 
 
