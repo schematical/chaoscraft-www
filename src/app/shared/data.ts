@@ -18,6 +18,7 @@ class HttpClient{
       options.withCredentials = true;
 
       return this.http.get(
+        //'http://localhost:3000/brains/test',
         'https://chaoscraft-api.schematical.com/bots/' + brainId + '/brain',
         new RequestOptions(options)
       )

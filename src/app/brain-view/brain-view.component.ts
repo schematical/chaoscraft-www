@@ -31,7 +31,9 @@ export class BrainViewComponent implements OnInit {
   private y: any;
   private xScale:any;
   private yScale:any;
+  private inputCount:number = null;
   private nodeYHight:number = null;
+  private inputNodeYHight:number = null;
   private svg: any;
   private brainData:any = null;
   private currBotUserame:string = null;
@@ -101,6 +103,7 @@ export class BrainViewComponent implements OnInit {
 
   }
   updateY(){
+    this.inputNodeYHight = ((parseInt(this.svgParent.style('height')) -100)/this.inputCount);
     this.nodeYHight = ((parseInt(this.svgParent.style('height')) -100)/this.brainData.nodes.length);
     this.simulation.force('Y', d3Force.forceY()
       .y((d) => {
@@ -112,7 +115,7 @@ export class BrainViewComponent implements OnInit {
             return y;
 
           case('input'):
-            y = d.sortedIndex * this.nodeYHight + 50;
+            y = d.inputIndex * this.inputNodeYHight + 50;
             //outputYCount += 1
             return y;
 
@@ -137,6 +140,7 @@ export class BrainViewComponent implements OnInit {
   }
   startDrawing() {
 
+
     this.outputFireRankNodes();
     //this.xScale = d3Scale.linear().range([0, 720]),
     //this.yScale = d3Scale.linear().range([0, 720]),
@@ -156,6 +160,14 @@ export class BrainViewComponent implements OnInit {
     this.svg.call(zoom);
 
 
+
+   this.inputCount = 0;
+    Object.keys(this.brainData.indexedNodes).forEach((nodeId)=>{
+      if(this.brainData.indexedNodes[nodeId].base_type == 'input'){
+        this.brainData.indexedNodes[nodeId].inputIndex = this.inputCount;
+        this.inputCount += 1;
+      }
+    })
 
 
     this.simulation = d3Force.forceSimulation()
@@ -263,6 +275,12 @@ export class BrainViewComponent implements OnInit {
       .attr("y1", function(d) { return d.source.y; })
       .attr("x2", function(d) { return d.target.x; })
       .attr("y2", function(d) { return d.target.y; })
+      .classed('hightlighted_link', function(d){
+        if(!d.source.node){
+          return false;
+        }
+        return d.source.node.classed('selected_node');
+      })
       /*.style("stroke-width", function(d) {
         return 1;//d.value;
       })
@@ -309,13 +327,14 @@ export class BrainViewComponent implements OnInit {
           }
         }*/
         this.selectedNodeJSON = JSON.stringify(jsonData, null, 3);
+        let self = this;
         function updateDependants(d){
           d3.select(d.node).classed('selected_node', true);
           if(!d.dependants){
             return;
           }
           d.dependants.forEach((dep)=>{
-            let depNode =  this.brainData.indexedNodes[dep.id]
+            let depNode = self.brainData.indexedNodes[dep.id]
             updateDependants(depNode);
           });
         }
