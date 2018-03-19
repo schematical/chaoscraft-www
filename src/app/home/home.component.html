@@ -1,3 +1,28 @@
-<p>
-  home works!
-</p>
+<div>
+  <h3>
+    Fluid Row Heights
+    <small>
+      XYZ
+    </small>
+  </h3>
+  <ngx-datatable
+    class="material"
+    [rows]="rows"
+    [loadingIndicator]="loadingIndicator"
+    [columns]="columns"
+    [columnMode]="'force'"
+    [headerHeight]="50"
+    [footerHeight]="50"
+    [rowHeight]="'auto'"
+    [reorderable]="reorderable"
+    [trackByProp]="'updated'"
+    (activate)="onActivate($event)"
+    (select)="onSelect($event)"
+  >
+    <!--<ngx-datatable-column name="name">
+      <ng-template let-column="column" ngx-datatable-header-template>
+        Holla! {{column.name}}
+      </ng-template>
+    </ngx-datatable-column>-->
+  </ngx-datatable>
+</div>

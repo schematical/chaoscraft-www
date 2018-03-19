@@ -1,4 +1,9 @@
 /* You can add global styles to this file, and also import other style files */
+
+@import '~@swimlane/ngx-datatable/release/index.css';
+@import '~@swimlane/ngx-datatable/release/themes/material.css';
+@import '~@swimlane/ngx-datatable/release/assets/icons.css';
+
 html, body { margin:0; padding:0; overflow:hidden }
 svg { position:fixed; top:0; left:0; height:100%; width:66% }
 textarea { position:fixed; top:0; right:0; height:100%; width:33% }

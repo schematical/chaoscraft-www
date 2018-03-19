@@ -49,7 +49,7 @@ export class BrainViewComponent implements OnInit {
 
   ngOnInit() {
 
-
+    let self = this;
 
     this.route.paramMap.subscribe((paramMap)=>{
       this.currBotUserame = paramMap.get('bot');
@@ -71,7 +71,7 @@ export class BrainViewComponent implements OnInit {
                 return;
               }
               n.dependants.forEach((dep)=>{
-                let depNode =  this.brainData.indexedNodes[dep.id]
+                let depNode =  self.brainData.indexedNodes[dep.id]
                 updateDependants(depNode);
               });
             }

@@ -10,6 +10,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { BrainViewComponent } from './brain-view/brain-view.component';
 import { HomeComponent } from './home/home.component';
 import {SocketService} from "./socket.service";
+import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 
 const appRoutes: Routes = [
   { path: '', component: HomeComponent },
@@ -33,7 +34,8 @@ const appRoutes: Routes = [
     ),
     BrowserModule,
     FormsModule,
-    HttpModule
+    HttpModule,
+    NgxDatatableModule
   ],
   providers: [HttpClient, SocketService],
   bootstrap: [AppComponent]

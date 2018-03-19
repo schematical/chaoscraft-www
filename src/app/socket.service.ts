@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import * as io from 'socket.io-client';
 @Injectable()
 export class SocketService {
+  public static www_hello = 'www_hello';
   public static client_fire_outputnode = 'client_fire_outputnode';
   protected socket:SocketIOClient.Socket = null;
   constructor() {
@@ -12,6 +13,9 @@ export class SocketService {
 
     this.socket.on('www_hello_response', (message) => {
       console.log('www_hello_response', message)
+    })
+    this.socket.on('request_handshake', (message) => {
+      this.socket.emit('www_hello', {foo: 'bar'});
     })
 
     this.socket.emit('www_hello', {foo: 'bar'});
