@@ -18,8 +18,8 @@ class HttpClient{
       options.withCredentials = true;
 
       return this.http.get(
-        //'http://localhost:3000/brains/test',
-        'https://chaoscraft-api.schematical.com/bots/' + brainId + '/brain',
+        'http://localhost:3000/bots/' + brainId + '/brain',///brains/test',
+        //'https://chaoscraft-api.schematical.com/bots/' + brainId + '/brain',
         new RequestOptions(options)
       )
       .subscribe((res: Response) => {
@@ -46,6 +46,28 @@ class HttpClient{
           indexedNodes: rawNodes
         });
       })
+    })
+    return p;
+
+
+  }
+  loadMinecraftData(){
+
+    let p = new Promise((resolve, reject)=>{
+
+      let options:any = {}
+      options.withCredentials = true;
+
+      return this.http.get(
+        'http://localhost:3000/translate',///brains/test',
+        //'https://chaoscraft-api.schematical.com/bots/' + brainId + '/brain',
+        new RequestOptions(options)
+      )
+        .subscribe((res: Response) => {
+          let rawNodes = res.json();
+
+          return resolve(rawNodes);
+        })
     })
     return p;
 

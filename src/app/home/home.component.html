@@ -1,28 +1,46 @@
-<div>
-  <h3>
-    Fluid Row Heights
-    <small>
-      XYZ
-    </small>
-  </h3>
-  <ngx-datatable
-    class="material"
-    [rows]="rows"
-    [loadingIndicator]="loadingIndicator"
-    [columns]="columns"
-    [columnMode]="'force'"
-    [headerHeight]="50"
-    [footerHeight]="50"
-    [rowHeight]="'auto'"
-    [reorderable]="reorderable"
-    [trackByProp]="'updated'"
-    (activate)="onActivate($event)"
-    (select)="onSelect($event)"
-  >
-    <!--<ngx-datatable-column name="name">
-      <ng-template let-column="column" ngx-datatable-header-template>
-        Holla! {{column.name}}
-      </ng-template>
-    </ngx-datatable-column>-->
-  </ngx-datatable>
-</div>
+
+
+  <main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+      <h1 class="h2">Dashboard  {{servers}}</h1>
+      <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group mr-2">
+          <button class="btn btn-sm btn-outline-secondary" (click)="requestPing();">Request Ping</button>
+          <button class="btn btn-sm btn-outline-secondary">Export</button>
+        </div>
+        <button class="btn btn-sm btn-outline-secondary dropdown-toggle">
+          <span data-feather="calendar"></span>
+          This week
+        </button>
+      </div>
+    </div>
+
+    <svg class="my-4" id="myChart" width="900" height="380" pointer-events="all" perserveAspectRatio="xMinYMid"></svg>
+    <h2>Section title</h2>
+    <div class="table-responsive">
+      <table class="table table-striped table-sm">
+        <thead>
+        <tr>
+          <th>Username</th>
+          <th>Name</th>
+          <th>Generation</th>
+          <th>Age</th>
+          <th>lastAction</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let row of rows">
+          <td>{{ row.username }}</td>
+          <td>{{row.name }}</td>
+          <td>{{row.generation }}</td>
+          <td>{{row.age}}</td>
+          <td>{{row.lastAction}}</td>
+          <td>
+            <a class="btn btn-sm btn-outline-secondary" href="/bots/{{row.username}}">View</a>
+          </td>
+        </tr>
+
+        </tbody>
+      </table>
+    </div>
+  </main>

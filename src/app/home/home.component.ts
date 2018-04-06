@@ -12,6 +12,7 @@ export class HomeComponent implements OnInit {
   public rows = [];
   public loadingIndicator: boolean = true;
   public reorderable: boolean = true;
+  public servers:string = null;
 
   public columns = [
     { prop: 'name' },
@@ -33,14 +34,19 @@ export class HomeComponent implements OnInit {
       this.rows = data;
       setTimeout(() => { this.loadingIndicator = false; }, 1500);
     });
+    this.loadServers();
     this.socket.on('client_hello', (bot)=>{
       bot.updated = Date.now().toString();
       let botExists = false;
-      this.rows.forEach((i)=>{
-        if(this.rows[i].username == bot.username){
-          botExists = true;
+      this.rows.forEach((row, index)=>{
+        if(!this.rows){
+          return;
         }
-        this.rows[i] = bot;
+        if(this.rows[index].username != bot.username){
+          return
+        }
+        botExists = true;
+        this.rows[index] = bot;
       })
       if(!botExists) {
         this.rows.push(bot);
@@ -55,7 +61,7 @@ export class HomeComponent implements OnInit {
         if(row.username != payload.username){
           return;
         }
-        row.lastAction = payload.type;
+        row.lastAction = payload.payload.type;
         row.updated = Date.now().toString();
         this.rows = [...this.rows];
         setTimeout(((row)=>{
@@ -67,6 +73,16 @@ export class HomeComponent implements OnInit {
     });
   }
 
+  public loadServers() {
+    const req = new XMLHttpRequest();
+    req.open('GET', `http://localhost:3000/servers`);//`http://chaoscraft-api.schematical.com/bots`);
+
+    req.onload = () => {
+      this.servers = /*JSON.parse*/(req.response);
+    };
+
+    req.send();
+  }
   public fetch(cb) {
     const req = new XMLHttpRequest();
     req.open('GET', `http://localhost:3000/bots`);//`http://chaoscraft-api.schematical.com/bots`);
@@ -86,6 +102,13 @@ export class HomeComponent implements OnInit {
   }
   onSelect(event) {
     console.log('Event: select', event, this.selected);
+  }
+  requestPing(){
+    console.log("Sending Ping");
+    this.socket.emit('www_ping', {
+      timestamp: new Date().getTime()
+    });
+
   }
 
 

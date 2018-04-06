@@ -37,14 +37,22 @@ export class BrainViewComponent implements OnInit {
   private svg: any;
   private brainData:any = null;
   private currBotUserame:string = null;
+  private minecraftData:any = null;
+  private nodeAgeTotals:any = {};
 
   constructor(
     private http: HttpClient,
     private route: ActivatedRoute,
     private socket: SocketService
   ) {
-    //this.minecraftData = new MinecraftData('1.12.2');
-    console.log("HIT");
+
+    this.http.loadMinecraftData()
+      .then((minecraftData)=>{
+        this.minecraftData = minecraftData;
+      })
+      .catch((err)=>{
+        console.error("Error Loading MinecraftData:" + err.message);
+      })
   }
 
   ngOnInit() {
@@ -56,6 +64,15 @@ export class BrainViewComponent implements OnInit {
       this.http.loadBrain(this.currBotUserame)
         .then((data: any) => {
           this.brainData = data;
+          this.nodeAgeTotals.total = 0;
+          Object.keys(this.brainData.indexedNodes).forEach((nodeId)=>{
+            let node = this.brainData.indexedNodes[nodeId];
+            node.originGen = node.originGen || 0;
+            this.nodeAgeTotals[node.originGen] = this.nodeAgeTotals[node.originGen] || 0;
+            this.nodeAgeTotals[node.originGen] += 1;
+            this.nodeAgeTotals.total += 1;
+          })
+          this.selectedNodeJSON = JSON.stringify(this.nodeAgeTotals);
           this.startDrawing();
           this.socket.on(SocketService.client_fire_outputnode, (payload)=>{
             if(payload.username !== this.currBotUserame){
@@ -103,19 +120,19 @@ export class BrainViewComponent implements OnInit {
 
   }
   updateY(){
-    this.inputNodeYHight = ((parseInt(this.svgParent.style('height')) -100)/this.inputCount);
-    this.nodeYHight = ((parseInt(this.svgParent.style('height')) -100)/this.brainData.nodes.length);
+    this.inputNodeYHight = ((parseInt(this.svgParent.style('height')) -200)/this.inputCount);
+    this.nodeYHight = ((parseInt(this.svgParent.style('height')) -200)/this.brainData.nodes.length);
     this.simulation.force('Y', d3Force.forceY()
       .y((d) => {
         let y = null;
         switch(d.base_type){
           case('output'):
-            y = d.sortedIndex * this.nodeYHight + 50;
+            y = d.sortedIndex * this.nodeYHight + 100;
             //inputYCount += 1
             return y;
 
           case('input'):
-            y = d.inputIndex * this.inputNodeYHight + 50;
+            y = d.inputIndex * this.inputNodeYHight + 100;
             //outputYCount += 1
             return y;
 
@@ -311,21 +328,31 @@ export class BrainViewComponent implements OnInit {
         delete(jsonData.y);
         delete(jsonData.vx);
         delete(jsonData.vy);
-        /*if(jsonData.target){
+        if(jsonData.target){
           switch(jsonData.target.type){
             case('block'):
-              jsonData.target.blockName = this.minecraftData.blocks[jsonData.target.block];
+              jsonData.target.blockNames = [];
+              jsonData.target.block.forEach((blockId)=> {
+                jsonData.target.blockNames.push(this.minecraftData.blocks[blockId].displayName);
+              });
             break;
             case('item'):
-              jsonData.target.itemName = this.minecraftData.items[jsonData.target.item];
+              jsonData.target.itemNames = [];
+              jsonData.target.item.forEach((itemId)=> {
+                jsonData.target.itemNames.push(this.minecraftData.items[itemId].displayName);
+              });
+
               break;
             case('entity'):
-              jsonData.target.entityName = this.minecraftData.mobs[jsonData.target.entity];
+              jsonData.target.entityNames = [];
+              jsonData.target.entityType.forEach((entityId)=> {
+                jsonData.target.entityNames.push(this.minecraftData.mobs[entityId].displayName);
+              });
               break;
             default:
               console.error("Not sure how to translate `jsonData.target.type`:" + jsonData.target.type);
           }
-        }*/
+        }
         this.selectedNodeJSON = JSON.stringify(jsonData, null, 3);
         let self = this;
         function updateDependants(d){
@@ -363,7 +390,7 @@ export class BrainViewComponent implements OnInit {
     nodeEnter.append('svg:circle')
       .attr("class", "node_circle")
       .attr('r', (d) => {
-        return this.nodeYHight;
+        return this.nodeYHight / 2;
       })
       .each(function(d){
         let className = null;
