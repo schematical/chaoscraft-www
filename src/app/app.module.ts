@@ -12,6 +12,7 @@ import { HomeComponent } from './home/home.component';
 import {SocketService} from "./socket.service";
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { FamilyTreeComponent } from './family-tree/family-tree.component';
+import { LeaderboardComponent } from './leaderboard/leaderboard.component';
 
 const appRoutes: Routes = [
   { path: '', component: HomeComponent },
@@ -23,6 +24,10 @@ const appRoutes: Routes = [
     path: 'tree',
     component: FamilyTreeComponent
   },
+  {
+    path: 'leaderboard',
+    component: LeaderboardComponent
+  },
   { path: '**', component: HomeComponent }
 ];
 
@@ -31,7 +36,8 @@ const appRoutes: Routes = [
     AppComponent,
     BrainViewComponent,
     HomeComponent,
-    FamilyTreeComponent
+    FamilyTreeComponent,
+    LeaderboardComponent
   ],
   imports: [
     RouterModule.forRoot(

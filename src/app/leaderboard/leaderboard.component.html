@@ -1,0 +1,45 @@
+
+
+<main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
+  <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+    <h1 class="h2">Dashboard</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+      <div class="btn-group mr-2">
+        <button class="btn btn-sm btn-outline-secondary">Share</button>
+        <button class="btn btn-sm btn-outline-secondary">Export</button>
+      </div>
+      <button class="btn btn-sm btn-outline-secondary dropdown-toggle">
+        <span data-feather="calendar"></span>
+        This week
+      </button>
+    </div>
+  </div>
+
+  <nav>
+    <div class="nav nav-tabs" id="nav-tab" role="tablist">
+      <a *ngFor="let statKey of statKeys" class="nav-item nav-link active" id="nav-home-tab" data-toggle="tab" href="#nav-home" role="tab" aria-controls="nav-home" aria-selected="true" (click)="showStats($event, statKey);">{{statKey}}</a>
+     </div>
+  </nav>
+
+  <div class="table-responsive">
+    <table class="table table-striped table-sm">
+      <thead>
+      <tr>
+        <th>Header</th>
+        <th>Header</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let stat of orderedStats">
+        <td>
+          <a href="/bots/{{stat.username}}">
+            {{stat.username}}
+          </a>
+        </td>
+        <td>{{stat.value}}</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+

@@ -26,7 +26,7 @@ export class BrainViewComponent implements OnInit {
   private links:any = null;
   private labels:any = null;
   private nodes:any = null;
-
+  private padding:number = 30;
   private x: any;
   private y: any;
   private xScale:any;
@@ -39,6 +39,7 @@ export class BrainViewComponent implements OnInit {
   private currBotUserame:string = null;
   private minecraftData:any = null;
   private nodeAgeTotals:any = {};
+  private stats:string = null;
 
   constructor(
     private http: HttpClient,
@@ -53,6 +54,16 @@ export class BrainViewComponent implements OnInit {
       .catch((err)=>{
         console.error("Error Loading MinecraftData:" + err.message);
       })
+  }
+  public getStats() {
+    const req = new XMLHttpRequest();
+    req.open('GET', `http://localhost:3000/bots/` + this.currBotUserame + '/stats');//`http://chaoscraft-api.schematical.com/bots`);
+
+    req.onload = () => {
+      this.stats = /*JSON.parse*/(req.response);
+    };
+
+    req.send();
   }
 
   ngOnInit() {
@@ -120,19 +131,19 @@ export class BrainViewComponent implements OnInit {
 
   }
   updateY(){
-    this.inputNodeYHight = ((parseInt(this.svgParent.style('height')) -200)/this.inputCount);
-    this.nodeYHight = ((parseInt(this.svgParent.style('height')) -200)/this.brainData.nodes.length);
+    this.inputNodeYHight = ((parseInt(this.svgParent.style('height')) - (this.padding * 2))/this.inputCount);
+    this.nodeYHight = ((parseInt(this.svgParent.style('height')) - (this.padding*2))/this.brainData.nodes.length);
     this.simulation.force('Y', d3Force.forceY()
       .y((d) => {
         let y = null;
         switch(d.base_type){
           case('output'):
-            y = d.sortedIndex * this.nodeYHight + 100;
+            y = d.sortedIndex * this.nodeYHight + this.padding;
             //inputYCount += 1
             return y;
 
           case('input'):
-            y = d.inputIndex * this.inputNodeYHight + 100;
+            y = d.inputIndex * this.inputNodeYHight + this.padding;
             //outputYCount += 1
             return y;
 

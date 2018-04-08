@@ -34,7 +34,7 @@ export class HomeComponent implements OnInit {
       this.rows = data;
       setTimeout(() => { this.loadingIndicator = false; }, 1500);
     });
-    this.loadServers();
+
     this.socket.on('client_hello', (bot)=>{
       bot.updated = Date.now().toString();
       let botExists = false;
@@ -73,7 +73,7 @@ export class HomeComponent implements OnInit {
     });
   }
 
-  public loadServers() {
+  public showServers() {
     const req = new XMLHttpRequest();
     req.open('GET', `http://localhost:3000/servers`);//`http://chaoscraft-api.schematical.com/bots`);
 
