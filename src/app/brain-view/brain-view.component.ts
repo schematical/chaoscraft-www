@@ -40,7 +40,8 @@ export class BrainViewComponent implements OnInit {
   private minecraftData:any = null;
   private nodeAgeTotals:any = {};
   private stats:string = null;
-
+  private page:string = 'brain-view';
+  private bot:any = null;
   constructor(
     private http: HttpClient,
     private route: ActivatedRoute,
@@ -55,17 +56,58 @@ export class BrainViewComponent implements OnInit {
         console.error("Error Loading MinecraftData:" + err.message);
       })
   }
-  public getStats() {
+  public getStats($event) {
+    $event.preventDefault();
     const req = new XMLHttpRequest();
     req.open('GET', `http://localhost:3000/bots/` + this.currBotUserame + '/stats');//`http://chaoscraft-api.schematical.com/bots`);
 
     req.onload = () => {
-      this.stats = /*JSON.parse*/(req.response);
+      this.stats = JSON.stringify(JSON.parse(req.response), null, 3);
+      this.page = 'stats';
     };
 
     req.send();
   }
 
+  public getInventory($event) {
+    $event.preventDefault();
+    const req = new XMLHttpRequest();
+    req.open('GET', `http://localhost:3000/bots/` + this.currBotUserame + '/inventory');//`http://chaoscraft-api.schematical.com/bots`);
+
+    req.onload = () => {
+      this.stats = JSON.stringify(JSON.parse(req.response), null, 3);
+      this.page = 'inventory';
+    };
+
+    req.send();
+  }
+  public editBot($event){
+    $event.preventDefault();
+    const req = new XMLHttpRequest();
+    req.open('GET', `http://localhost:3000/bots/` + this.currBotUserame);//`http://chaoscraft-api.schematical.com/bots`);
+
+    req.onload = () => {
+      this.bot = JSON.parse(req.response);
+      console.log('this.bot', this.bot);
+      this.page = 'edit';
+    };
+
+
+    req.send();
+  }
+  public saveBot($event){
+    $event.preventDefault();
+    const req = new XMLHttpRequest();
+    req.open('POST', `http://localhost:3000/bots/` + this.currBotUserame, this.bot);//`http://chaoscraft-api.schematical.com/bots`);
+
+    req.onload = () => {
+      this.bot = JSON.parse(req.response);
+      this.page = 'edit';
+    };
+    req.setRequestHeader("Content-Type", "application/json");
+    req.send(JSON.stringify(this.bot));
+    //req.send();
+  }
   ngOnInit() {
 
     let self = this;

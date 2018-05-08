@@ -13,6 +13,7 @@ export class HomeComponent implements OnInit {
   public loadingIndicator: boolean = true;
   public reorderable: boolean = true;
   public servers:string = null;
+  public promptReset:boolean = false;
 
   public columns = [
     { prop: 'name' },
@@ -85,7 +86,7 @@ export class HomeComponent implements OnInit {
   }
   public fetch(cb) {
     const req = new XMLHttpRequest();
-    req.open('GET', `http://localhost:3000/bots`);//`http://chaoscraft-api.schematical.com/bots`);
+    req.open('GET', `http://localhost:3000/bots/active`);//`http://chaoscraft-api.schematical.com/bots/active`);
 
     req.onload = () => {
       cb(JSON.parse(req.response));
@@ -94,6 +95,18 @@ export class HomeComponent implements OnInit {
     req.send();
   }
 
+  public reset($event){
+    $event.preventDefault();
+    const req = new XMLHttpRequest();
+    req.open('POST', 'http://localhost:3000/reset');//`http://chaoscraft-api.schematical.com/reset`);
+
+    req.onload = () => {
+      this.promptReset = false;
+    };
+    req.setRequestHeader("Content-Type", "application/json");
+    req.send(JSON.stringify({}));
+    //req.send();
+  }
 
 
   onActivate(e){
