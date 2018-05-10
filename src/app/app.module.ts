@@ -8,6 +8,7 @@ import { HttpClient } from './shared/data';
 import { RouterModule, Routes } from '@angular/router';
 
 import { BrainViewComponent } from './brain-view/brain-view.component';
+import { BotViewComponent } from './bot-view/bot-view.component';
 import { HomeComponent } from './home/home.component';
 import {SocketService} from "./socket.service";
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
@@ -15,26 +16,35 @@ import { FamilyTreeComponent } from './family-tree/family-tree.component';
 import { LeaderboardComponent } from './leaderboard/leaderboard.component';
 
 const appRoutes: Routes = [
-  { path: '', component: HomeComponent },
+  { path: '', component: HomeComponent,     pathMatch:'full' },
   {
     path: 'bots/:bot',
-    component: BrainViewComponent
+    component: BotViewComponent,
+    pathMatch:'full'
+  },
+  {
+    path: 'bots/:bot/brain',
+    component: BrainViewComponent,
+    pathMatch:'full'
   },
   {
     path: 'tree',
-    component: FamilyTreeComponent
+    component: FamilyTreeComponent,
+    pathMatch:'full'
   },
   {
     path: 'leaderboard',
-    component: LeaderboardComponent
+    component: LeaderboardComponent,
+    pathMatch:'full'
   },
-  { path: '**', component: HomeComponent }
+  //{ path: '**', component: HomeComponent }
 ];
 
 @NgModule({
   declarations: [
     AppComponent,
     BrainViewComponent,
+    BotViewComponent,
     HomeComponent,
     FamilyTreeComponent,
     LeaderboardComponent

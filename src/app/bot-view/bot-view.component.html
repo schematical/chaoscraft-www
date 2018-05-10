@@ -1,0 +1,135 @@
+
+
+    <main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+        <h1 class="h2">Dashboard</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+          <div class="btn-group mr-2">
+            <button class="btn btn-sm btn-outline-secondary">Share</button>
+            <button class="btn btn-sm btn-outline-secondary">Export</button>
+          </div>
+          <button class="btn btn-sm btn-outline-secondary dropdown-toggle">
+            <span data-feather="calendar"></span>
+            This week
+          </button>
+        </div>
+      </div>
+      <ul class="nav nav-tabs" id="myTab" role="tablist">
+
+
+        <li class="nav-item">
+          <a class="nav-link" id="edit-tab" data-toggle="tab" href="#edit" role="tab" aria-controls="edit" aria-selected="false" (click)="editBot($event);">Edit</a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" id="stats-tab" data-toggle="tab" href="#stats" role="tab" aria-controls="stats" aria-selected="false" (click)="getStats($event);">Stats</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="inventory-tab" data-toggle="tab" href="#inventory" role="tab" aria-controls="inventory" aria-selected="false" (click)="getInventory($event);">Inventory</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="brain-tab" data-toggle="tab" href="/bots/{{currBotUserame}}/brain" role="tab" aria-controls="home" aria-selected="true">Brain</a>
+        </li>
+      </ul>
+      <div class="tab-content" id="myTabContent">
+        <div class="tab-pane fade" id="home" role="tabpanel" aria-labelledby="home-tab" [ngClass]="{ 'show active': page=='brain-view'}">
+          <svg class="my-4" id="myChart" width="900" height="380" pointer-events="all" perserveAspectRatio="xMinYMid"></svg>
+          <!--<button class="btn btn-sm btn-outline-secondary">Expand</button>-->
+
+          <form>
+
+            <div class="form-group">
+              <label for="stats-txt">Node JSON</label>
+              <textarea class="form-control" id="selected-node-json" name="selected-node-json" rows="10" cols="100" [(ngModel)]="selectedNodeJSON"></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="tab-pane fade" id="stats" role="tabpanel" aria-labelledby="stats-tab" [ngClass]="{ 'show active': page=='stats' }">
+
+          <form>
+
+            <div class="form-group">
+              <label for="stats-txt">Stats</label>
+              <textarea class="form-control" id="stats-txt" name="stats-txt" rows="10" [(ngModel)]="stats"></textarea>
+            </div>
+          </form>
+        </div>
+
+
+        <div class="tab-pane fade" id="inventory" role="tabpanel" aria-labelledby="stats-tab" [ngClass]="{ 'show active': page=='inventory' }">
+
+          <form>
+
+            <div class="form-group">
+              <label for="stats-txt">Inventory</label>
+              <textarea class="form-control" id="inventory-txt" name="stats-txt" rows="10" cols="100" [(ngModel)]="stats"></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="tab-pane fade" id="edit" role="tabpanel" aria-labelledby="edit-tab"  [ngClass]="{ 'show active': page=='edit' }">
+
+          <span *ngIf="!bot">Loading...</span>
+          <form *ngIf="bot">
+            <div class="form-group">
+              <label for="username">Username</label>
+              <input type="text" class="form-control" id="username" name="username" placeholder="Username" [(ngModel)]="bot.username">
+            </div>
+            <div class="form-group">
+              <label for="username">Name</label>
+              <input type="text" class="form-control" id="name" name="name" placeholder="Name" [(ngModel)]="bot.name">
+            </div>
+            <div class="form-check">
+              <input type="checkbox" class="form-check-input" id="alive" name="alive" [(ngModel)]="bot.alive">
+              <label class="form-check-label" for="alive">Alive</label>
+            </div>
+            <div class="form-check">
+              <input type="checkbox" class="form-check-input" id="flagged" name="flagged" [(ngModel)]="bot.flagged">
+              <label class="form-check-label" for="flagged">Flagged</label>
+            </div>
+            <div class="form-group">
+              <label for="notes">Notes</label>
+              <textarea class="form-control" id="notes" rows="3" name="notes" [(ngModel)]="bot.notes"></textarea>
+            </div>
+            <div class="form-group">
+              <label for="spawnPriority">Spawn Priority</label>
+              <input type="number" class="form-control" id="spawnPriority" name="spawnPriority" placeholder="Spawn Priority" [(ngModel)]="bot.spawnPriority">
+            </div>
+
+            <button type="submit" class="btn btn-primary" (click)="saveBot($event)">Submit</button>
+          </form>
+
+
+
+        </div>
+      </div>
+
+      <!--<h2>Section title</h2>
+      <div class="table-responsive">
+        <table class="table table-striped table-sm">
+          <thead>
+          <tr>
+            <th>#</th>
+            <th>Header</th>
+            <th>Header</th>
+            <th>Header</th>
+            <th>Header</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr>
+            <td>1,001</td>
+            <td>Lorem</td>
+            <td>ipsum</td>
+            <td>dolor</td>
+            <td>sit</td>
+          </tr>
+          </tbody>
+        </table>
+    </div>-->
+  </main>
+
+
+
+
+<!--<textarea id="ageInfo" [(ngModel)]="selectedNodeJSON"></textarea>
+<textarea id="selectedNode"  [(ngModel)]="selectedNodeJSON"></textarea>-->

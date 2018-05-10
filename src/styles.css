@@ -9,9 +9,9 @@ html, body { margin:0; padding:0;/* overflow:hidden; */}
 svg { position:fixed; top:0; left:0; height:100%; width:66% }
 */
 
-#selectedNode { position:fixed; top:33%; right:0; height:33%; width:33% }
+#selectedNode { position:fixed; top:12%; right:0; height:33%; width:12% }
 
-#ageInfo { position:fixed; top:0; right:0; height:33%; width:33% }
+#ageInfo { position:fixed; top:24%; right:0; height:12%; width:12% }
 
 .node_circle{
   fill-opacity:0.4;
