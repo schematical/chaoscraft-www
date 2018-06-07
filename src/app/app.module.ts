@@ -14,12 +14,19 @@ import {SocketService} from "./socket.service";
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { FamilyTreeComponent } from './family-tree/family-tree.component';
 import { LeaderboardComponent } from './leaderboard/leaderboard.component';
+import { BotVisionComponent } from './bot-vision/bot-vision.component';
+import { WorldTopViewComponent } from './world-top-view/world-top-view.component';
 
 const appRoutes: Routes = [
   { path: '', component: HomeComponent,     pathMatch:'full' },
   {
     path: 'bots/:bot',
     component: BotViewComponent,
+    pathMatch:'full'
+  },
+  {
+    path: 'bots/:bot/world/top',
+    component: WorldTopViewComponent,
     pathMatch:'full'
   },
   {
@@ -47,7 +54,9 @@ const appRoutes: Routes = [
     BotViewComponent,
     HomeComponent,
     FamilyTreeComponent,
-    LeaderboardComponent
+    LeaderboardComponent,
+    BotVisionComponent,
+    WorldTopViewComponent
   ],
   imports: [
     RouterModule.forRoot(

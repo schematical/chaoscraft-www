@@ -8,10 +8,11 @@ import * as d3Array from 'd3-array';
 import * as d3Axis from 'd3-axis';
 import * as d3Zoom from 'd3-zoom';
 import * as d3Force from 'd3-force';
-//import * as MinecraftData  from  'minecraft-data' ;
+
 import { ActivatedRoute, Params } from '@angular/router';
 import { SocketService } from '../socket.service'
 import { HttpClient }  from '../shared/data';
+//import * as MinecraftData  from  'minecraft-data' ;
 @Component({
   selector: 'app-brain-view',
   templateUrl: './brain-view.component.html',
@@ -124,6 +125,7 @@ export class BrainViewComponent implements OnInit {
   updateY(){
     this.inputNodeYHight = ((parseInt(this.svgParent.style('height')) - (this.padding * 2))/this.inputCount);
     this.nodeYHight = ((parseInt(this.svgParent.style('height')) - (this.padding*2))/this.brainData.nodes.length);
+
     this.simulation.force('Y', d3Force.forceY()
       .y((d) => {
         let y = null;
@@ -191,7 +193,12 @@ export class BrainViewComponent implements OnInit {
 
     this.simulation = d3Force.forceSimulation()
       .force("link", d3Force.forceLink().id(function(d) { return d.id; }))
-      .force("collide", d3Force.forceCollide().radius((d)=> { return this.nodeYHight * 2; }).iterations(2))
+      .force("collide", d3Force.forceCollide().radius((d)=> {
+        if(this.nodeYHight < 20){
+          return 20;
+        }
+        return this.nodeYHight * 2;
+      }).iterations(2))
       //.force("charge", d3Force.forceManyBody().strength(-50))
       //.force("center", d3Force.forceCenter(this.width / 2, this.height / 2))
       //.alphaDecay(0.05)

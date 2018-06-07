@@ -101,8 +101,18 @@ export class BotViewComponent implements OnInit {
       this.currBotUserame = paramMap.get('bot');
 
     })
+    this.socket.clientStartObserve({
+      username: this.currBotUserame
+    })
 
   }
+  //TODO: Make this a real thing
+  ngOnWhateverClosesThePage(){
+    this.socket.clientEndObserve({
+      username: this.currBotUserame
+    })
+  }
+
 
 
 }

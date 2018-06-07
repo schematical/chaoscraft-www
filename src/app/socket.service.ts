@@ -26,5 +26,11 @@ export class SocketService {
   emit(event, data){
     this.socket.emit(event, data);
   }
+  clientStartObserve(data){
+    this.socket.emit('client_start_observe', data);
+  }
+  clientEndObserve(data){
+    this.socket.emit('client_end_observe', data);
+  }
 
 }
