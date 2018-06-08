@@ -8,7 +8,7 @@ export class MinecraftMapService {
   static Map:any = {};
   static Chars:any = {};
   static Settings:any = {
-    tile_width:64,
+    tile_width:32,
     viewport_width:14,
     viewport_height:10,
     viewport_depth:100
@@ -24,17 +24,17 @@ export class MinecraftMapService {
   static Tiles:any = {};
   static Objects:any = {};
   static Levels:any = {};
-  static CreateLevel(width, height, depth){
+  /*static CreateLevel(width, height, depth){
     for(var z = 1; z <= depth; z++){
       MinecraftMapService.Map.Tiles[z] = [];
       for(var y = 1; y <= height; y++){
-        MinecraftMapService.Map.Tiles[z][y] = [];
-        /*for(var x = 1; x <= width; x++){
-         MinecraftMapService.Map.Tiles[z][y][x] = {};
-         }*/
+        MinecraftMapService.Map.Tiles[y][z] = [];
+        /!*for(var x = 1; x <= width; x++){
+         MinecraftMapService.Map.Tiles[y][z][x] = {};
+         }*!/
       }
     }
-  }
+  }*/
   static InitMap(map:MCMapBase){
     MinecraftMapService.Map = map;
     //MinecraftMapService.Map = new funMap();
@@ -143,23 +143,23 @@ export class MinecraftMapService {
     z = Math.floor(z);
     y = Math.floor(y);
     x = Math.floor(x);
-    if(typeof MinecraftMapService.Map.Tiles[z] == 'undefined'){
-      MinecraftMapService.Map.Tiles[z] = [];
+    if(!MinecraftMapService.Map.Tiles[y]){
+      MinecraftMapService.Map.Tiles[y] = [];
     }
-    if(typeof MinecraftMapService.Map.Tiles[z][y] == 'undefined'){
-      MinecraftMapService.Map.Tiles[z][y] = [];
+    if(!MinecraftMapService.Map.Tiles[y][z]){
+      MinecraftMapService.Map.Tiles[y][z] = [];
     }
-    if(typeof MinecraftMapService.Map.Tiles[z][y][x] == 'undefined'){
+    if(!MinecraftMapService.Map.Tiles[y][z][x]){
       return MinecraftMapService.AddTile(x,y,z, MinecraftMapService.Tiles.Air);
     }
-    return MinecraftMapService.Map.Tiles[z][y][x];
+    return MinecraftMapService.Map.Tiles[y][z][x];
   }
   static AddTile(x,y,z, funTile){
-    if(typeof MinecraftMapService.Map.Tiles[z] == 'undefined'){
-      MinecraftMapService.Map.Tiles[z] = [];
+    if(!MinecraftMapService.Map.Tiles[y]){
+      MinecraftMapService.Map.Tiles[y] = [];
     }
-    if(typeof MinecraftMapService.Map.Tiles[z][y] == 'undefined'){
-      MinecraftMapService.Map.Tiles[z][y] = [];
+    if(!MinecraftMapService.Map.Tiles[y][z]){
+      MinecraftMapService.Map.Tiles[y][z] = [];
     }
 
     var objTile = new funTile();
@@ -168,7 +168,7 @@ export class MinecraftMapService {
     objTile.x = x;
     objTile.y = y;
     objTile.z = z;
-    MinecraftMapService.Map.Tiles[z][y][x] = objTile;
+    MinecraftMapService.Map.Tiles[y][z][x] = objTile;
     for(var i in objTile.Animations){
       for(var ii in objTile.Animations[i].Frames){
         var objFrame = objTile.Animations[i].Frames[ii];
@@ -178,7 +178,7 @@ export class MinecraftMapService {
     return objTile;
   }
   static RemoveTile(objTile){
-    delete MinecraftMapService.Map.Tiles[objTile.z][objTile.y][objTile.x];
+    delete MinecraftMapService.Map.Tiles[objTile.y][objTile.z][objTile.x];
   }
   static MoveObject(objObject, newX, newY, newZ){
 
@@ -188,7 +188,7 @@ export class MinecraftMapService {
       var newZ = newX.z;
     }
     //Remove from old tile
-    if(typeof(objObject.Tile) != 'undefined'){
+    if(objObject.Tile){
       objObject.Tile.RemoveObject(objObject);
     }
     var objTitle = MinecraftMapService.GetTile(
@@ -228,7 +228,7 @@ export class MinecraftMapService {
     ()=>{
       MinecraftMapService.Cycle();
     },
-      '100'
+      5000
     );
   }
   static DrawShade(x,y,width,height, alpha){
@@ -271,14 +271,18 @@ export class MinecraftMapService {
         MinecraftMapService.SpecialActions[i].action.Exicute();
       }
     }
-
-    MinecraftMapService.eleCanvas.clearRect(0, 0, MinecraftMapService.eleCanvas.width, MinecraftMapService.eleCanvas.height);
+    MinecraftMapService.eleCanvas.clearRect(
+      0,
+      0,
+      window.screen.width,//MinecraftMapService.eleCanvas.width,
+      window.screen.height// MinecraftMapService.eleCanvas.height
+     );
     //console.log(MinecraftMapService.Players);
     for(let strId in MinecraftMapService.Objects){
       var objObject = MinecraftMapService.Objects[strId];
       objObject.Move();
-      if(typeof(objObject.Action) != 'undefined'){
-        if(typeof(objObject.Action) == 'object'){
+      if(objObject.Action){
+        if(_.isObject(objObject.Action)){
           objObject.Action.Exicute();
         }else{
           objObject.Action();
@@ -407,56 +411,53 @@ export class MinecraftMapService {
     }
 
 
-
-
     //-------------_RENDER_------------------------//
 
     //Update screens focus before draw
-    if(typeof(MinecraftMapService.Focus.objObject) != 'undefined'){
+    if(MinecraftMapService.Focus.objObject){
       MinecraftMapService.Focus.x = MinecraftMapService.Focus.objObject.x;
       MinecraftMapService.Focus.y = MinecraftMapService.Focus.objObject.y;
       MinecraftMapService.Focus.z = MinecraftMapService.Focus.objObject.z;
     }
-    //console.log(MinecraftMapService.Focus.z);
 
-
-    //for(z in MinecraftMapService.Map.Tiles){
-    var zStart = Math.floor(MinecraftMapService.Focus.z - MinecraftMapService.Settings.viewport_depth);
-    if(zStart < 0){
-      zStart = 0;
+    var yStart = Math.floor(MinecraftMapService.Focus.y - MinecraftMapService.Settings.viewport_depth);
+    if(yStart < MinecraftMapService.Map.worldData.y.min){
+      yStart = MinecraftMapService.Map.worldData.y.min;
     }
-    var zEnd = Math.floor(MinecraftMapService.Focus.z + MinecraftMapService.Settings.viewport_depth);
+    var yEnd = Math.floor(MinecraftMapService.Focus.y + MinecraftMapService.Settings.viewport_depth);
 
-    if(zEnd > MinecraftMapService.Map.Tiles.length){
+    if(yEnd > MinecraftMapService.Map.worldData.y.max){
       //MinecraftMapService.Map.Tiles[z] = [];
-      zEnd = MinecraftMapService.Map.Tiles.length;
+
+      yEnd = MinecraftMapService.Map.worldData.y.max;
     }
-    for(var z = zStart; z < zEnd; z ++){
-      var yStart = Math.floor(MinecraftMapService.Focus.y - MinecraftMapService.Settings.viewport_height);
-      if(yStart < 0){
-        yStart = 0;
+
+    for(var y = yStart; y < yEnd; y ++){
+      var zStart = Math.floor(MinecraftMapService.Focus.z - MinecraftMapService.Settings.viewport_height);
+      if(zStart < MinecraftMapService.Map.worldData.z.min){
+        zStart = MinecraftMapService.Map.worldData.z.min;
       }
-      var yEnd = Math.floor(MinecraftMapService.Focus.y + MinecraftMapService.Settings.viewport_height);
-      if(typeof(MinecraftMapService.Map.Tiles[z]) == 'undefined'){
-        MinecraftMapService.Map.Tiles[z] = [];
+      var zEnd = Math.floor(MinecraftMapService.Focus.z + MinecraftMapService.Settings.viewport_height);
+      if(!MinecraftMapService.Map.Tiles[y]){
+        MinecraftMapService.Map.Tiles[y] = [];
       }
-      if(yEnd > MinecraftMapService.Map.Tiles[z].length){
-        yEnd = MinecraftMapService.Map.Tiles[z].length;
+      if(zEnd > MinecraftMapService.Map.worldData.z.max){
+        zEnd = MinecraftMapService.Map.worldData.z.max;
       }
-      for(var y = yStart; y < yEnd; y ++){
+      for(var z = zStart; z < zEnd; z ++){
         //for(y in MinecraftMapService.Map.Tiles[z]){
         var xStart = Math.floor(MinecraftMapService.Focus.x - MinecraftMapService.Settings.viewport_width);
-        if(xStart < 0){
-          xStart = 0;
+        if(xStart < MinecraftMapService.Map.worldData.x.min){
+          xStart = MinecraftMapService.Map.worldData.x.min;
         }
         var xEnd = Math.floor(MinecraftMapService.Focus.x + MinecraftMapService.Settings.viewport_width);
-        if(typeof(MinecraftMapService.Map.Tiles[z][y]) == 'undefined'){
-          MinecraftMapService.Map.Tiles[z][y] = [];
+        if(!MinecraftMapService.Map.Tiles[y][z]){
+          MinecraftMapService.Map.Tiles[y][z] = [];
         }
         if(
-          (xEnd > MinecraftMapService.Map.Tiles[z][y].length)
+          (xEnd > MinecraftMapService.Map.worldData.x.max)
         ){
-          xEnd = MinecraftMapService.Map.Tiles[z][y].length;
+          xEnd = MinecraftMapService.Map.worldData.x.max;
         }
         for(var x = xStart; x < xEnd; x ++){
 
@@ -464,24 +465,24 @@ export class MinecraftMapService {
 
           //Only draw tiles that exists(performance)
           if(
-            (typeof(MinecraftMapService.Map.Tiles[z]) != 'undefined') &&
-            (typeof(MinecraftMapService.Map.Tiles[z][y]) != 'undefined') &&
-            (typeof(MinecraftMapService.Map.Tiles[z][y][x]) != 'undefined') &&
-            (typeof(MinecraftMapService.Map.Tiles[z][y][x].Draw) != 'undefined')
+            (MinecraftMapService.Map.Tiles[y]) &&
+            (MinecraftMapService.Map.Tiles[y][z]) &&
+            (MinecraftMapService.Map.Tiles[y][z][x]) &&
+            (MinecraftMapService.Map.Tiles[y][z][x].Draw)
           ){
-            var objAbove = MinecraftMapService.Map.Tiles[z][y][x].Above().Above();
+            var objAbove = MinecraftMapService.Map.Tiles[y][z][x].Above().Above();
             if(
               (!objAbove.visible) ||
               (
-                (!MinecraftMapService.Map.Tiles[z][y][x].Front().visible) ||
-                (!MinecraftMapService.Map.Tiles[z][y][x].Above().Front().visible) ||
-                (!MinecraftMapService.Map.Tiles[z][y][x].Right().visible)
+                (!MinecraftMapService.Map.Tiles[y][z][x].Front().visible) ||
+                (!MinecraftMapService.Map.Tiles[y][z][x].Above().Front().visible) ||
+                (!MinecraftMapService.Map.Tiles[y][z][x].Right().visible)
               )
             ){
-              MinecraftMapService.Map.Tiles[z][y][x].Draw(MinecraftMapService.eleCanvas);
-              for(let strId in MinecraftMapService.Map.Tiles[z][y][x].Objects){
+              MinecraftMapService.Map.Tiles[y][z][x].Draw(MinecraftMapService.eleCanvas);
+              for(let strId in MinecraftMapService.Map.Tiles[y][z][x].Objects){
                 //console.log("Drawing: " + strId);
-                MinecraftMapService.Map.Tiles[z][y][x].Objects[strId].Draw(MinecraftMapService.eleCanvas);
+                MinecraftMapService.Map.Tiles[y][z][x].Objects[strId].Draw(MinecraftMapService.eleCanvas);
               }
             }else{
               objAbove.top = undefined;
@@ -533,7 +534,7 @@ export class MCObjectBase {
   public top;
   public get Action():any {
     return {
-      objHoldObject: {},
+      objHoldObject: null,
       Exicute: function () {
       }
     }
@@ -559,6 +560,7 @@ export class MCObjectBase {
     if(!this.visible){
       return;
     }
+
     var intOrigAlpha = MinecraftMapService.eleCanvas.globalAlpha;
     var objFrame = this.Animations[this.state].Frames[this.frame];
 
@@ -567,28 +569,29 @@ export class MCObjectBase {
     }
     var intSpecialOffset = 5;
     var drawX = this.x - MinecraftMapService.Focus.x;
-    var drawY = this.y -MinecraftMapService.Focus.y - intSpecialOffset;
-    var intZDiff = this.z - MinecraftMapService.Focus.z;
+    var drawZ = this.z -MinecraftMapService.Focus.z - intSpecialOffset;
+    console.log("Drawing",drawX,drawZ );
+    var intYDiff = this.y - MinecraftMapService.Focus.y;
 
-    var drawWidth_affectZ = ((.05 *( this.z+ intZDiff)/2) + 1)  * MinecraftMapService.Settings.tile_width;//((.1 * MinecraftMapService.Focus.z) + 1)  * MinecraftMapService.Settings.tile_width;
-    var drawWidth = drawWidth_affectZ;//MinecraftMapService.Settings.tile_width;
+    var drawWidth_affectY = ((.05 *( this.y+ intYDiff)/2) + 1)  * MinecraftMapService.Settings.tile_width;//((.1 * MinecraftMapService.Focus.z) + 1)  * MinecraftMapService.Settings.tile_width;
+    var drawWidth = drawWidth_affectY;//MinecraftMapService.Settings.tile_width;
 
-    this.top = ((drawY  * drawWidth_affectZ) + MinecraftMapService.Focus.offsetY + (intSpecialOffset * MinecraftMapService.Settings.tile_width));
+    this.top = ((drawZ  * drawWidth_affectY) + MinecraftMapService.Focus.offsetY + (intSpecialOffset * MinecraftMapService.Settings.tile_width));
     this.left = (drawX  * drawWidth) + MinecraftMapService.Focus.offsetX;
     this.right = this.left + drawWidth;
     this.bottom = this.top + drawWidth
 
 
-    if(typeof(this.Animations[this.state].flip) != 'undefined'){
+    if(this.Animations[this.state].flip){
       c.scale(-1, 1);
       this.left = (-1 * this.left) - drawWidth;
     }
-    var intZDif = this.z - MinecraftMapService.Focus.z;
+    var intYDiff = this.y - MinecraftMapService.Focus.y;
     if(
       (this.Id != MinecraftMapService.Focus.objObject.Id) &&
-      (Math.abs(this.x - MinecraftMapService.Focus.x) < (intZDif/4 + 1)) &&
-      ((this.y - MinecraftMapService.Focus.y) > (intZDif/-4 + 1)) &&
-      (intZDif >= 0)
+      (Math.abs(this.x - MinecraftMapService.Focus.x) < (intYDiff/4 + 1)) &&
+      ((this.z - MinecraftMapService.Focus.z) > (intYDiff/-4 + 1)) &&
+      (intYDiff >= 0)
     ){
       MinecraftMapService.eleCanvas.globalAlpha = .3;
     }
@@ -604,25 +607,26 @@ export class MCObjectBase {
       drawWidth,
       drawWidth
     );
-    if(typeof(this.Animations[this.state].flip) != 'undefined'){
+    if(this.Animations[this.state].flip){
       c.scale(-1, 1);
     }
-    this.PreDrawShade(objFrame, c, drawWidth, intZDiff);
+    //TODO: Put back in shade
+   /* this.PreDrawShade(objFrame, c, drawWidth, intYDiff);
 
     MinecraftMapService.DrawShade(
       this.left,
       this.top,
       drawWidth,
       drawWidth,
-      (Math.abs(intZDiff)/10) * MinecraftMapService.eleCanvas.globalAlpha
-    );
-    if(typeof(this.Action) != 'undefined'){
-      c.fillText(
+      (Math.abs(intYDiff)/10) * MinecraftMapService.eleCanvas.globalAlpha
+    );*/
+    if(this.Action){
+      /*c.fillText(
         'Xxxx',
         //this.Action.type,
         this.top + 200,
         this.left
-      );
+      );*/
     }
     this.frame += 1;
     if(this.frame >= this.Animations[this.state].Frames.length ){
@@ -633,28 +637,24 @@ export class MCObjectBase {
     }
 
     if(
-      (typeof(this.Action) != 'undefined') &&
-      (typeof(this.Action.objHoldObject) != 'undefined')
+      (this.Action) &&
+      (this.Action.objHoldObject)
     ){
       //console.log("Drawing:" + this.Action.objHoldObject.Id);
       this.Action.objHoldObject.Draw(c);
     }
     MinecraftMapService.eleCanvas.globalAlpha = intOrigAlpha;
-    /*
-     c.save();
-     c.translate((this.x + objFrame.width/2), (this.y - objFrame.height));
-     c.rotate( this.rot );
-     c.drawImage(
-     objFrame.imageObj,
-     0,//this.x,
-     0,//this.y + 300,
-     objFrame.width,
-     objFrame.height
-     );
-     c.translate( -1 * (this.x  + objFrame.width/2), -1 * (this.y - objFrame.height ));
-     //ctx.drawImage( myImageOrCanvas, 0, 0 );
-     c.restore();*/
 
+
+  }
+  TouchingObjects(){
+    var arrReturn = [];
+    for(let strKey in this.Tile.Objects){
+      if(strKey != this.Id){
+        arrReturn[arrReturn.length] = this.Tile.Objects[strKey];
+      }
+    }
+    return arrReturn;
   }
   Cycle(){
 
@@ -846,15 +846,15 @@ export class MCTile extends MCObjectBase{
   constructor() {
     super();
   }
-  PreDrawShade(objFrame, c, drawWidth, intZDiff){
+  PreDrawShade(objFrame, c, drawWidth, intYDiff){
 
-    if(this.z > 0){
+    if(this.y > 0){
       var objBelow = this.Below();
-      if(typeof(objBelow.top) != 'undefined'){
+      if(objBelow.top){
         //console.log("New Height: " +objBelow.Id + ':'+ (objBelow.top - this.bottom));
         var intNewHeight =  objBelow.bottom - this.bottom;
         if(intNewHeight > 0){
-          if(typeof(this.Animations['side']) != 'undefined'){
+          if(this.Animations['side']){
             objFrame = this.Animations['side'].Frames[this.frame];
           }
           c.drawImage(
@@ -875,7 +875,7 @@ export class MCTile extends MCObjectBase{
             this.bottom,
             drawWidth,
             Math.abs(intNewHeight),
-            (Math.abs(intZDiff)/10 +.2) * MinecraftMapService.eleCanvas.globalAlpha
+            (Math.abs(intYDiff)/10 +.2) * MinecraftMapService.eleCanvas.globalAlpha
           );
 
         }
@@ -894,29 +894,29 @@ export class MCTile extends MCObjectBase{
 
     return MinecraftMapService.GetTile(
       this.x,
-      this.y,
-      this.z -1
+      this.y -1,
+      this.z
     );
   }
   Above(){
-    return MinecraftMapService.GetTile(
-      this.x,
-      this.y,
-      this.z +1
-    );
-  }
-  Front(){
     return MinecraftMapService.GetTile(
       this.x,
       this.y +1,
       this.z
     );
   }
+  Front(){
+    return MinecraftMapService.GetTile(
+      this.x,
+      this.y ,
+      this.z+1
+    );
+  }
   Behind(){
     return MinecraftMapService.GetTile(
       this.x,
-      this.y -1,
-      this.z
+      this.y ,
+      this.z-1
     );
   }
   Right(){
@@ -995,21 +995,57 @@ export class MCWorldMap extends MCMapBase{
       for(let y =  this.worldData.y.min; y <= this.worldData.y.max; y++){
         for(let z =  this.worldData.z.min; z <= this.worldData.z.max; z++){
           let block = this.worldData.world[x][y][z];
-          if(block && MinecraftMapService.Tiles[block.type]){
+          if(block/* && MinecraftMapService.Tiles[block.type]*/){
             let objTile = MinecraftMapService.AddTile(
               x,
               y,
               z,
-              MinecraftMapService.Tiles[block.type]
+              MinecraftMapService.Tiles[block.type] || MinecraftMapService.Tiles.Lava
             );
             //objTile._rZ = rZ;
+          }else{
+            console.log("Missing: ", x,y,z);
           }
         }
       }
     }
-
+    var objPlayer = MinecraftMapService.AddPlayer(
+      'owen',
+      MinecraftMapService.Chars.Player
+    );
+    MinecraftMapService.Focus.objObject = objPlayer;
+    this.AddObject(
+      objPlayer,
+      this.worldData.position.x,
+      this.worldData.position.y,
+      this.worldData.position.z
+    );
   }
 }
+
+
+
+
+class MCPlayer extends MCObjectBase{
+  public Animations = {
+    'default':{
+      "Frames":[
+        {
+          "name":"",
+          "img":"/assets/imgs/entities-28.png",
+          "width":"32",
+          "height":"32",
+          "x":"64",
+          "y":"0",
+          "offsetWidth":"32",
+          "offsetHeight":"32"
+        }
+      ]
+    }
+  };
+}
+MinecraftMapService.Chars.Player = MCPlayer;
+
 
 class AirTile extends MCTile {
  public visible = false;
@@ -1249,7 +1285,7 @@ class WaterTile extends MCTile {
           "img": "/assets/imgs/blocks-1.png",
           "width": "16",
           "height": "16",
-          "x": "186",
+          "x": "192",
           "y": "240",
           "offsetWidth": "16",
           "offsetHeight": "16",
@@ -1263,3 +1299,44 @@ class WaterTile extends MCTile {
 MinecraftMapService.Tiles.Water = WaterTile;
 MinecraftMapService.Tiles['8'] = WaterTile;
 MinecraftMapService.Tiles['9'] = WaterTile;
+
+
+
+
+class LavaTile extends MCTile {
+  public Animations = {
+    'default': {
+      "Frames": [
+        {
+          "name": "Grass",
+          "img": "/assets/imgs/blocks-1.png",
+          "height": "16",
+          "width": "16",
+          "x": "186",
+          "y": "240",
+          "offsetWidth": "16",
+          "offsetHeight": "16"
+        }
+      ]
+    },
+    'side': {
+      "Frames": [
+        {
+          "name": "default",
+          "img": "/assets/imgs/blocks-1.png",
+          "width": "16",
+          "height": "16",
+          "x": "186",
+          "y": "240",
+          "offsetWidth": "16",
+          "offsetHeight": "16",
+          "offsetYSpace": "0"
+        }
+      ]
+    }
+  }
+}
+
+MinecraftMapService.Tiles.Lava = LavaTile;
+MinecraftMapService.Tiles['10'] = LavaTile;
+MinecraftMapService.Tiles['11'] = LavaTile;
