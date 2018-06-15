@@ -54,5 +54,8 @@ export class WorldTopViewComponent implements OnInit {
     MinecraftMapService.InitMap(new MCWorldMap(worldData))
     MinecraftMapService.Start();
   }
+  keyup($event){
+
+  }
 
 }
