@@ -8,11 +8,11 @@ export class MinecraftMapService {
   static Map:MCWorldMap;
   static Chars:any = {};
   static Settings:any = {
-    tile_width:128,
+    tile_width:32,
     viewport_width:14,
     viewport_height:10,
-    viewport_depth:1,
-    draw_debug:true
+    viewport_depth:5,
+    draw_debug:false
   };
   static Focus:any = {
     x:0,
@@ -427,7 +427,7 @@ export class MinecraftMapService {
         zEnd = MinecraftMapService.Map.worldData.z.max;
       }
       let yy =  Math.round(MinecraftMapService.Map.worldData.position.y);
-      if(y ==yy){
+      if(y == yy){
         console.log("HIT");
       }
       for(var z = zStart; z < zEnd; z ++){
@@ -458,7 +458,6 @@ export class MinecraftMapService {
           ){
             var objAbove = MinecraftMapService.Map.Tiles[y][z][x].Above().Above();
             if(
-              //(true) || //TODO: Remove this debug
               (y == yEnd - 1) ||
               (!objAbove.visible) ||
               (
@@ -545,7 +544,7 @@ export class MCObjectBase {
 
 
   Draw(c){
-    if(!this.visible && !MinecraftMapService.Settings.draw_debug) {
+    if(!this.visible/* && !MinecraftMapService.Settings.draw_debug*/) {
       return;
     }
 
@@ -561,20 +560,23 @@ export class MCObjectBase {
 
     var intYDiff = this.y - MinecraftMapService.Focus.y;
 
-    var drawWidth_affectY = ((.05 * ( this.y + intYDiff) / 2) + 1) * MinecraftMapService.Settings.tile_width;//((.1 * MinecraftMapService.Focus.z) + 1)  * MinecraftMapService.Settings.tile_width;
+   /* var drawWidth_affectY = ((.05 * ( this.y + intYDiff) / 2) + 1) * MinecraftMapService.Settings.tile_width;//((.1 * MinecraftMapService.Focus.z) + 1)  * MinecraftMapService.Settings.tile_width;
     var drawWidth = MinecraftMapService.Settings.tile_width;//drawWidth_affectY;
 
     this.top = (drawZ * MinecraftMapService.Settings.tile_width + MinecraftMapService.Focus.offsetY);
     this.left = (drawX * MinecraftMapService.Settings.tile_width + MinecraftMapService.Focus.offsetX);
 
     this.right = this.left + MinecraftMapService.Settings.tile_width;
-    this.bottom = this.top + MinecraftMapService.Settings.tile_width;
+    this.bottom = this.top + MinecraftMapService.Settings.tile_width;*/
 
      //This is the real / old way of doing it
-/*     this.top = ((drawZ  * drawWidth_affectY) + MinecraftMapService.Focus.offsetY + (intSpecialOffset * MinecraftMapService.Settings.tile_width));
+
+      var drawWidth_affectY = ((.05 * ( this.y + intYDiff) / 2) + 1) * MinecraftMapService.Settings.tile_width;//((.1 * MinecraftMapService.Focus.z) + 1)  * MinecraftMapService.Settings.tile_width;
+      var drawWidth = drawWidth_affectY;
+     this.top = ((drawZ  * drawWidth_affectY) + MinecraftMapService.Focus.offsetY + (intSpecialOffset * MinecraftMapService.Settings.tile_width));
      this.left = (drawX  * drawWidth) + MinecraftMapService.Focus.offsetX;
      this.right = this.left + drawWidth;
-     this.bottom = this.top + drawWidth;*/
+     this.bottom = this.top + drawWidth;
 
    /* if (this.Animations[this.state].flip) {
       c.scale(-1, 1);
@@ -606,7 +608,7 @@ export class MCObjectBase {
         c.scale(-1, 1);
       }*/
       //TODO: Put back in shade
-      /* this.PreDrawShade(objFrame, c, drawWidth, intYDiff);
+       this.PreDrawShade(objFrame, c, drawWidth, intYDiff);
 
        MinecraftMapService.DrawShade(
        this.left,
@@ -614,7 +616,7 @@ export class MCObjectBase {
        drawWidth,
        drawWidth,
        (Math.abs(intYDiff)/10) * MinecraftMapService.eleCanvas.globalAlpha
-       );*/
+       );
 
       this.frame += 1;
       if (this.frame >= this.Animations[this.state].Frames.length) {
@@ -871,7 +873,7 @@ export class MCTile extends MCObjectBase{
   }
   PreDrawShade(objFrame, c, drawWidth, intYDiff){
 
-    if(this.y > 0){
+    if(this.y > MinecraftMapService.Focus.y){
       var objBelow = this.Below();
       if(objBelow.top){
         //console.log("New Height: " +objBelow.Id + ':'+ (objBelow.top - this.bottom));
@@ -1300,7 +1302,7 @@ class WaterTile extends MCTile {
           "img": "/assets/imgs/blocks-1.png",
           "height": "16",
           "width": "16",
-          "x": "186",
+          "x": "192",
           "y": "240",
           "offsetWidth": "16",
           "offsetHeight": "16"
@@ -1341,7 +1343,7 @@ class LavaTile extends MCTile {
           "img": "/assets/imgs/blocks-1.png",
           "height": "16",
           "width": "16",
-          "x": "192",
+          "x": "208",
           "y": "240",
           "offsetWidth": "16",
           "offsetHeight": "16"
@@ -1355,7 +1357,7 @@ class LavaTile extends MCTile {
           "img": "/assets/imgs/blocks-1.png",
           "width": "16",
           "height": "16",
-          "x": "192",
+          "x": "208",
           "y": "240",
           "offsetWidth": "16",
           "offsetHeight": "16",
@@ -1369,3 +1371,80 @@ class LavaTile extends MCTile {
 MinecraftMapService.Tiles.Lava = LavaTile;
 MinecraftMapService.Tiles['10'] = LavaTile;
 MinecraftMapService.Tiles['11'] = LavaTile;
+
+
+class SandTile extends MCTile {
+  public Animations:any = {
+    'default': {
+      "Frames": [
+        {
+          "name": "Grass",
+          "img": "/assets/imgs/blocks-1.png",
+          "height": "16",
+          "width": "16",
+          "x": 5 * 16,
+          "y": 2 * 16,
+          "offsetWidth": "16",
+          "offsetHeight": "16"
+        }
+      ]
+    },
+    'side': {
+      "Frames": [
+        {
+          "name": "default",
+          "img": "/assets/imgs/blocks-1.png",
+          "width": "16",
+          "height": "16",
+          "x": 5 * 16,
+          "y": 2 * 16,
+          "offsetWidth": "16",
+          "offsetHeight": "16",
+          "offsetYSpace": "0"
+        }
+      ]
+    }
+  }
+}
+
+MinecraftMapService.Tiles.Sand = SandTile;
+MinecraftMapService.Tiles['12'] = SandTile;
+
+
+class GravelTile extends MCTile {
+  public Animations:any = {
+    'default': {
+      "Frames": [
+        {
+          "name": "Grass",
+          "img": "/assets/imgs/blocks-1.png",
+          "height": "16",
+          "width": "16",
+          "x": 16 * 16,
+          "y": 1 * 16,
+          "offsetWidth": "16",
+          "offsetHeight": "16"
+        }
+      ]
+    },
+    'side': {
+      "Frames": [
+        {
+          "name": "default",
+          "img": "/assets/imgs/blocks-1.png",
+          "width": "16",
+          "height": "16",
+          "x": 16 * 16,
+          "y": 1 * 16,
+          "offsetWidth": "16",
+          "offsetHeight": "16",
+          "offsetYSpace": "0"
+        }
+      ]
+    }
+  }
+}
+
+MinecraftMapService.Tiles.Gravel = GravelTile;
+MinecraftMapService.Tiles['13'] = GravelTile;
+
