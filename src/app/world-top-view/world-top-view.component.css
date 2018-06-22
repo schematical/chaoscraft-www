@@ -1,0 +1,22 @@
+.sidebar-open{
+  width:150Px;
+}
+.sidebar-closed{
+  width: 30Px;
+}
+#sidebar{
+  position: fixed;
+
+  height:100%;
+  right:0Px;
+  top:0Px;
+  z-index: 200;
+  background-color: lightgrey;
+}
+
+#sidebar-inner{
+  position: relative;
+  height: 100%;
+  width: 100%;
+  padding-top: 50Px;
+}

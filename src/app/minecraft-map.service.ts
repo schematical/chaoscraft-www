@@ -7,12 +7,16 @@ export class MinecraftMapService {
   static Actions:any = {};
   static Map:MCWorldMap;
   static Chars:any = {};
+  static Debug:any = {};
   static Settings:any = {
     tile_width:32,
     viewport_width:14,
     viewport_height:10,
     viewport_depth:5,
-    draw_debug:false
+    viewport_min_y:null,
+    viewport_max_y:null,
+    draw_debug:false,
+    render_special_offset:5
   };
   static Focus:any = {
     x:0,
@@ -128,11 +132,12 @@ export class MinecraftMapService {
       MinecraftMapService.Map.Tiles[y][z] = {};
     }
     if(!MinecraftMapService.Map.Tiles[y][z][x]){
-      return MinecraftMapService.AddTile(x,y,z, MinecraftMapService.Tiles.Air);
+      return MinecraftMapService.AddTile(x,y,z, MinecraftMapService.Tiles.Air, {});
     }
     return MinecraftMapService.Map.Tiles[y][z][x];
   }
-  static AddTile(x,y,z, funTile){
+  static AddTile(x,y,z, funTile, options?:any){
+    options = options || {};
     if(!MinecraftMapService.Map.Tiles[y]){
       MinecraftMapService.Map.Tiles[y] = {};
     }
@@ -140,7 +145,7 @@ export class MinecraftMapService {
       MinecraftMapService.Map.Tiles[y][z] = {};
     }
 
-    var objTile = new funTile();
+    var objTile = new funTile(options);
     objTile.Id = 'tile_' + x + '_' + y + '_' + z;
     objTile.x = x;
     objTile.y = y;
@@ -209,20 +214,20 @@ export class MinecraftMapService {
     );
     MinecraftMapService.Cycle();
   }
-  static DrawShade(x,y,width,height, alpha){
+  static DrawShade(options:any){
     MinecraftMapService.eleCanvas.beginPath();
     var intOrigAlpha = MinecraftMapService.eleCanvas.globalAlpha;
-    MinecraftMapService.eleCanvas.globalAlpha   = alpha;
+    MinecraftMapService.eleCanvas.globalAlpha   = options.alpha;
 
     MinecraftMapService.eleCanvas.rect(
-      x,
-      y,
-      width,
-      height,
-      alpha
+      options.x,
+      options.y,
+      options.width,
+      options.height,
+      options.alpha
     );
 
-    MinecraftMapService.eleCanvas.fillStyle = 'black';
+    MinecraftMapService.eleCanvas.fillStyle = options.color || 'black';
     MinecraftMapService.eleCanvas.fill();
     MinecraftMapService.eleCanvas.globalAlpha   = intOrigAlpha;
   }
@@ -400,12 +405,14 @@ export class MinecraftMapService {
       MinecraftMapService.Focus.y = MinecraftMapService.Focus.objObject.y;
       MinecraftMapService.Focus.z = MinecraftMapService.Focus.objObject.z;
     }
-
-    var yStart = Math.floor(MinecraftMapService.Focus.y - MinecraftMapService.Settings.viewport_depth);
+    MinecraftMapService.Settings.viewport_min_y = MinecraftMapService.Settings.viewport_min_y || Math.floor(MinecraftMapService.Focus.y - MinecraftMapService.Settings.viewport_depth);
+    var yStart = MinecraftMapService.Settings.viewport_min_y;
     if(yStart < MinecraftMapService.Map.worldData.y.min){
       yStart = MinecraftMapService.Map.worldData.y.min;
     }
-    var yEnd = Math.floor(MinecraftMapService.Focus.y + MinecraftMapService.Settings.viewport_depth);
+    MinecraftMapService.Settings.viewport_max_y = MinecraftMapService.Settings.viewport_max_y || Math.floor(MinecraftMapService.Focus.y + MinecraftMapService.Settings.viewport_depth);
+
+    var yEnd = MinecraftMapService.Settings.viewport_max_y;
 
     if(yEnd > MinecraftMapService.Map.worldData.y.max){
       //MinecraftMapService.Map.Tiles[z] = {};
@@ -481,6 +488,94 @@ export class MinecraftMapService {
 
 
 
+    /*//Render Brain Debug
+    console.log("BrainData:", this.Map.brainData.nodes);
+    this.Map.brainData.nodes.forEach((brainNode)=>{
+      if(brainNode.target && brainNode.target.position){
+        let bounds = MinecraftMapService.GetBoundsByTargetRange(brainNode.target.position);
+        //TODO: Draw stuff
+        MinecraftMapService.eleCanvas.beginPath();
+        MinecraftMapService.eleCanvas.strokeStyle="#FF0000";
+        MinecraftMapService.eleCanvas.moveTo(bounds.right, bounds.top);
+        MinecraftMapService.eleCanvas.lineTo(bounds.left, bounds.top);
+        MinecraftMapService.eleCanvas.lineTo(bounds.left, bounds.bottom);
+        MinecraftMapService.eleCanvas.lineTo(bounds.right, bounds.bottom);
+        MinecraftMapService.eleCanvas.lineTo(bounds.right, bounds.top);
+
+        MinecraftMapService.eleCanvas.stroke();
+        MinecraftMapService.eleCanvas.fillStyle = "white";
+
+        MinecraftMapService.eleCanvas.fillText(
+          brainNode.id,
+          bounds.left+ 5,
+          (bounds.top + 20),
+        );
+
+      }
+    });*/
+
+
+
+  }
+  static GetBounds(options){
+    if(!options.x){
+      throw new Error("Missing `options.x`");
+    }
+    if(!options.y){
+      throw new Error("Missing `options.y`");
+    }
+    if(!options.z){
+      throw new Error("Missing `options.z`");
+    }
+    options.drawWidthPx = options.drawWidthPx || MinecraftMapService.Settings.tile_width;
+    options.xSpan = options.xSpan || 1;
+    options.ySpan = options.ySpan || 1;
+    options.zSpan = options.zSpan || 1;
+    var intOrigAlpha = MinecraftMapService.eleCanvas.globalAlpha;
+
+   ;
+    var drawX = options.x - MinecraftMapService.Focus.x;
+    var drawZ = options.z - MinecraftMapService.Focus.z - MinecraftMapService.Settings.render_special_offset;
+
+    var intYDiff = options.y - MinecraftMapService.Focus.y;
+
+
+    //This is the real / old way of doing it
+
+    var drawWidth_affectY = ((.05 * ( options.y + intYDiff) / 2) + 1) * (options.drawWidthPx);//((.1 * MinecraftMapService.Focus.z) + 1)  * MinecraftMapService.Settings.tile_width;
+    var drawWidth = drawWidth_affectY;
+    let response:any = {}
+    response.top = ((drawZ  * drawWidth_affectY) + MinecraftMapService.Focus.offsetY + (MinecraftMapService.Settings.render_special_offset * drawWidth));
+    response.left = (drawX  * drawWidth) + MinecraftMapService.Focus.offsetX;
+    response.right = response.left + (drawWidth * options.xSpan);
+    response.bottom = response.top + (drawWidth * options.zSpan);
+
+    /* if (this.Animations[this.state].flip) {
+     c.scale(-1, 1);
+     this.left = (-1 * this.left) - drawWidth;
+     }*/
+    response.yDiff = options.y - MinecraftMapService.Focus.y;
+    /*if (
+     (this.Id != MinecraftMapService.Focus.objObject.Id) &&
+     (Math.abs(this.x - MinecraftMapService.Focus.x) < (intYDiff / 4 + 1)) &&
+     ((this.z - MinecraftMapService.Focus.z) > (intYDiff / -4 + 1)) &&
+     (intYDiff >= 0)
+     ) {
+     MinecraftMapService.eleCanvas.globalAlpha = .3;
+     }*/
+     return response;
+  }
+  static GetBoundsByTargetRange(options){
+
+    let newOptions = {
+      x: options.xDelta.min + MinecraftMapService.Focus.x,
+      xSpan: options.xDelta.max - options.xDelta.min,
+      y: options.yDelta.min + MinecraftMapService.Focus.y,
+      ySpan: options.yDelta.max - options.yDelta.min,
+      z: options.zDelta.min + MinecraftMapService.Focus.z,
+      zSpan: options.zDelta.max - options.zDelta.min,
+    }
+    return this.GetBounds(newOptions);
   }
 };
 
@@ -519,6 +614,11 @@ export class MCObjectBase {
   public right;
   public bottom;
   public top;
+  public meta:any;
+  public constructor(options?:any){
+    options = options || {};
+    this.meta = options.meta || {};
+  }
   public get Action():any {
     return {
       objHoldObject: null,
@@ -545,7 +645,7 @@ export class MCObjectBase {
 
   Draw(c){
     if(!this.visible/* && !MinecraftMapService.Settings.draw_debug*/) {
-      return;
+      //return;
     }
 
     var intOrigAlpha = MinecraftMapService.eleCanvas.globalAlpha;
@@ -560,14 +660,6 @@ export class MCObjectBase {
 
     var intYDiff = this.y - MinecraftMapService.Focus.y;
 
-   /* var drawWidth_affectY = ((.05 * ( this.y + intYDiff) / 2) + 1) * MinecraftMapService.Settings.tile_width;//((.1 * MinecraftMapService.Focus.z) + 1)  * MinecraftMapService.Settings.tile_width;
-    var drawWidth = MinecraftMapService.Settings.tile_width;//drawWidth_affectY;
-
-    this.top = (drawZ * MinecraftMapService.Settings.tile_width + MinecraftMapService.Focus.offsetY);
-    this.left = (drawX * MinecraftMapService.Settings.tile_width + MinecraftMapService.Focus.offsetX);
-
-    this.right = this.left + MinecraftMapService.Settings.tile_width;
-    this.bottom = this.top + MinecraftMapService.Settings.tile_width;*/
 
      //This is the real / old way of doing it
 
@@ -578,10 +670,10 @@ export class MCObjectBase {
      this.right = this.left + drawWidth;
      this.bottom = this.top + drawWidth;
 
-   /* if (this.Animations[this.state].flip) {
+    if (this.Animations[this.state].flip) {
       c.scale(-1, 1);
       this.left = (-1 * this.left) - drawWidth;
-    }*/
+    }
     var intYDiff = this.y - MinecraftMapService.Focus.y;
     /*if (
       (this.Id != MinecraftMapService.Focus.objObject.Id) &&
@@ -604,19 +696,19 @@ export class MCObjectBase {
         drawWidth,
         drawWidth
       );
-      /*if (this.Animations[this.state].flip) {
+      if (this.Animations[this.state].flip) {
         c.scale(-1, 1);
-      }*/
+      }
       //TODO: Put back in shade
        this.PreDrawShade(objFrame, c, drawWidth, intYDiff);
 
-       MinecraftMapService.DrawShade(
-       this.left,
-       this.top,
-       drawWidth,
-       drawWidth,
-       (Math.abs(intYDiff)/10) * MinecraftMapService.eleCanvas.globalAlpha
-       );
+       MinecraftMapService.DrawShade({
+           x: this.left,
+           y: this.top,
+           width:drawWidth,
+           height: drawWidth,
+           alpha: (Math.abs(intYDiff) / 10) * MinecraftMapService.eleCanvas.globalAlpha
+      });
 
       this.frame += 1;
       if (this.frame >= this.Animations[this.state].Frames.length) {
@@ -635,14 +727,47 @@ export class MCObjectBase {
       }
       MinecraftMapService.eleCanvas.globalAlpha = intOrigAlpha;
     }
-    /*if(
-      this.right < 0 ||
-      this.left > MinecraftMapService.eleCanvas.width ||
-      this.bottom < 0 ||
-      this.top > MinecraftMapService.eleCanvas.height
+
+
+    if(
+      MinecraftMapService.Debug.brainNode &&
+      MinecraftMapService.Debug.brainNode.target &&
+      MinecraftMapService.Debug.brainNode.target.position &&
+      MinecraftMapService.Debug.brainNode.target.position.xDelta
     ){
-      return;
-    }*/
+      let rawPositionRange = _.clone(MinecraftMapService.Debug.brainNode.target.position);
+      rawPositionRange.relative = true;
+      let absoluteRange = MinecraftMapService.Focus.objObject.TranslateRelitivePositionRange(
+        new MCPositionRange(
+          rawPositionRange
+        )
+      );
+      if(this.IsInPositionRange(absoluteRange)){
+        //Draw a red shade over this
+        let color = 'red';
+        //TODO: Change color based on block match
+
+        //TODO: Also entities?
+
+        if(
+          MinecraftMapService.Debug.brainNode.target.type == 'block' &&
+          _.indexOf(MinecraftMapService.Debug.brainNode.target.block, parseInt(this.meta.type)) !== -1
+        ){
+          color = 'green';
+        }
+        //TODO: Possibly out line successfully found stuff
+        MinecraftMapService.DrawShade({
+          x: this.left,
+          y: this.top,
+          width:drawWidth,
+          height: drawWidth,
+          alpha: this.visible? .5 : .1,
+          color:color
+        });
+      }
+    }
+
+
     if(MinecraftMapService.Settings.draw_debug) {
       //console.log("DEBUG:");
       c.beginPath();
@@ -786,7 +911,49 @@ export class MCObjectBase {
     this.ChangeState('l_walk');
     this.vX = -1 * this.speed;
   }
+  IsInPositionRange(positionRange:MCPositionRange){
+    if(positionRange.relative){
+      throw new Error("`IsInPositionRange` - PositionRange can not be  `relative`");
+    }
+    if(
+      this.x >= positionRange.xDelta.min &&
+      this.x <= positionRange.xDelta.max &&
 
+      this.y >= positionRange.yDelta.min &&
+      this.y <= positionRange.yDelta.max &&
+
+      this.z >= positionRange.zDelta.min &&
+      this.z <= positionRange.zDelta.max
+    ){
+      return true;
+    }
+    return false
+  }
+
+  /**
+   * Takes a Position Range and translates it relitive to this target
+   * @constructor
+   */
+  TranslateRelitivePositionRange(positionRange:MCPositionRange):MCPositionRange{
+    if(!positionRange.relative){
+      throw new Error("PositionRange is not `relative`");
+    }
+    let responsePositionRange = new MCPositionRange({});
+    responsePositionRange.xDelta = {
+      min: this.x + positionRange.xDelta.min,
+      max: this.x + positionRange.xDelta.max
+    }
+    responsePositionRange.yDelta = {
+      min: this.y + positionRange.yDelta.min,
+      max: this.y + positionRange.yDelta.max
+    }
+    responsePositionRange.zDelta = {
+      min: this.z + positionRange.zDelta.min,
+      max: this.z + positionRange.zDelta.max
+    }
+    return responsePositionRange;
+
+  }
 
 
 
@@ -822,6 +989,19 @@ export class MCObjectBase {
 
   Survive(){
 
+  }
+}
+
+export class MCPositionRange{
+  public relative: false;
+  public xDelta:any;
+  public yDelta:any;
+  public zDelta:any;
+  constructor(options:any){
+    this.xDelta = options.xDelta;
+    this.yDelta = options.yDelta;
+    this.zDelta = options.zDelta;
+    this.relative = options.relative || false;
   }
 }
 export class MCTile extends MCObjectBase{
@@ -868,8 +1048,8 @@ export class MCTile extends MCObjectBase{
       ]
     }
   };
-  constructor() {
-    super();
+  constructor(options?:any) {
+    super(options);
   }
   PreDrawShade(objFrame, c, drawWidth, intYDiff){
 
@@ -884,8 +1064,8 @@ export class MCTile extends MCObjectBase{
           }
           c.drawImage(
             objFrame.imageObj,
-            objFrame.x,//193,
-            objFrame.y,//223,
+            objFrame.x,
+            objFrame.y,
 
             objFrame.width,
             objFrame.height,
@@ -893,15 +1073,16 @@ export class MCTile extends MCObjectBase{
             this.bottom,
             drawWidth,
             Math.abs(intNewHeight)
+          );
 
-          );
-          MinecraftMapService.DrawShade(
-            this.left,
-            this.bottom,
-            drawWidth,
-            Math.abs(intNewHeight),
-            (Math.abs(intYDiff)/10 +.2) * MinecraftMapService.eleCanvas.globalAlpha
-          );
+
+          MinecraftMapService.DrawShade({
+            x: this.left,
+            y: this.bottom,
+            width: drawWidth,
+            height: Math.abs(intNewHeight),
+            alpha: (Math.abs(intYDiff) / 10 + .2) * MinecraftMapService.eleCanvas.globalAlpha
+          });
 
         }
       }
@@ -1011,9 +1192,11 @@ class MCMapBase{
 }
 export class MCWorldMap extends MCMapBase{
   public worldData:any;
-  constructor(worldData:any){
+  public brainData:any;
+  constructor(worldData:any, brainData:any){
     super();
     this.worldData = worldData;
+    this.brainData = brainData;
   }
   Init(){
     for(let x =  this.worldData.x.min; x <= this.worldData.x.max; x++){
@@ -1025,7 +1208,10 @@ export class MCWorldMap extends MCMapBase{
               x,
               y,
               z,
-              MinecraftMapService.Tiles[block.type]
+              MinecraftMapService.Tiles[block.type],
+              {
+                meta:block
+              }
             );
             //objTile._rZ = rZ;
           }else{
@@ -1033,7 +1219,10 @@ export class MCWorldMap extends MCMapBase{
               x,
               y,
               z,
-              MinecraftMapService.Tiles.Lava
+              MinecraftMapService.Tiles.Lava,
+              {
+                meta:block
+              }
             );
             console.log("Missing: ", x,y,z, ' - Type: ' + (block && block.type || block));
           }
